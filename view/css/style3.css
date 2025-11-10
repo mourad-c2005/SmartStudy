@@ -1,0 +1,72 @@
+    :root {
+      --green:#4CAF50; --yellow:#FFEB3B; --light:#F8FFF8; --white:#fff; --dark:#2e7d32;
+    }
+    body{
+      font-family:'Open Sans',sans-serif;
+      background:var(--light);
+      color:#333;
+      margin:0;
+      padding-bottom:60px;
+    }
+    .top-nav{
+      background:var(--white);
+      padding:1rem 5%;
+      box-shadow:0 4px 15px rgba(76,175,80,0.1);
+      display:flex;justify-content:space-between;align-items:center;
+      position:sticky;top:0;z-index:1000;
+    }
+    .logo{
+      font-family:'Montserrat';
+      font-weight:700;
+      font-size:1.6rem;
+      color:var(--green);
+      text-decoration:none;
+    }
+    .nav-menu a{
+      text-decoration:none;color:#555;font-weight:600;
+      margin:0 .7rem;padding:.4rem 1rem;border-radius:25px;transition:.3s;
+    }
+    .nav-menu a:hover,.nav-menu a.active{
+      background:var(--light);color:var(--green);
+    }
+    .user-info{text-align:right;}
+    .user-photo{width:45px;height:45px;border-radius:50%;border:3px solid var(--green);}
+    .logout-btn{
+      background:var(--yellow);
+      padding:.4rem 1rem;
+      border-radius:25px;
+      font-weight:600;
+      color:#333;
+      text-decoration:none;
+    }
+    .logout-btn:hover{background:#fdd835;}
+    .main-content{padding:3rem 5%;}
+    .welcome-card{
+      background:var(--white);border-radius:20px;padding:3rem;text-align:center;
+      box-shadow:0 8px 25px rgba(0,0,0,0.08);margin-bottom:2rem;
+    }
+    .welcome-card h1{font-family:'Montserrat';color:var(--green);margin-bottom:1rem;}
+    .btn-start{
+      background:var(--green);color:#fff;padding:.8rem 2rem;border-radius:30px;font-weight:600;text-decoration:none;
+    }
+    .btn-start:hover{background:var(--dark);}
+    .module-card{
+      background:var(--white);border-radius:16px;padding:2rem;text-align:center;
+      box-shadow:0 6px 18px rgba(0,0,0,0.06);transition:.3s;border-left:5px solid var(--green);
+    }
+    .module-card:hover{transform:translateY(-5px);}
+    .btn-back{
+      display:inline-block;
+      margin-bottom:1.5rem;
+      padding:.5rem 1rem;
+      border-radius:25px;
+      background:var(--dark);
+      color:#fff;
+      text-decoration:none;
+      font-weight:600;
+    }
+    .btn-back:hover{background:var(--green);}
+    footer{
+      background:#222;color:#ccc;text-align:center;padding:1.5rem;font-size:.9rem;margin-top:3rem;
+    }
+    footer strong{color:var(--yellow);}
