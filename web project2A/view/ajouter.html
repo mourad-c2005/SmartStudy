@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SmartStudy+ | Admin</title>
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&family=Open+Sans&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+
+  <style>
+    :root {
+      --green: #4CAF50;
+      --bg: #f5f7f6;
+      --yellow: #FFCA28;
+      --gray: #f1f3f2;
+      --dark: #333;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: var(--bg); color: var(--dark); font-family: 'Open Sans', sans-serif;
+      line-height: 1.6;
+    }
+
+    /* Header */
+    header {
+      background: white; padding: 1.2rem 2rem; box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .logo {
+      font-family: 'Montserrat', sans-serif; font-weight: 700; font-size: 1.8rem; color: var(--green);
+    }
+    .nav a {
+      margin-left: 1.5rem; color: var(--dark); text-decoration: none; font-weight: 500;
+    }
+    .nav a:hover { color: var(--green); }
+
+    /* Container */
+    .container { max-width: 1100px; margin: 2rem auto; padding: 0 1rem; }
+
+    /* Cards */
+    .card {
+      background: white; border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-left: 4px solid var(--green);
+    }
+    .card h2 {
+      font-family: 'Montserrat', sans-serif; color: var(--green); margin-bottom: 1rem; font-size: 1.4rem;
+    }
+
+    /* Stats */
+    .stats {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem;
+    }
+    .stat-box {
+      background: var(--gray); padding: 1rem; border-radius: 10px; text-align: center;
+    }
+    .stat-box h3 { color: var(--green); font-family: 'Montserrat', sans-serif; }
+    .stat-box p { font-size: 0.9rem; color: #666; }
+
+    /* Table */
+    table {
+      width: 100%; border-collapse: collapse; margin-top: 1rem;
+    }
+    th, td { padding: 0.9rem; text-align: left; border-bottom: 1px solid #eee; }
+    th { background: var(--gray); color: var(--green); font-family: 'Montserrat', sans-serif; }
+    .btn { padding: 0.4rem 0.8rem; border: none; border-radius: 6px; cursor: pointer; font-size: 0.9rem; margin: 0 0.2rem; }
+    .btn-edit { background: #007bff; color: white; }
+    .btn-delete { background: #dc3545; color: white; }
+    .btn-promote { background: var(--yellow); color: var(--dark); }
+
+    /* Form */
+    input, select, button {
+      width: 100%; padding: 0.75rem; margin: 0.5rem 0; border: 1px solid #ddd; border-radius: 8px;
+    }
+    button { background: var(--green); color: white; font-weight: 600; cursor: pointer; }
+    button:hover { background: #43a047; }
+
+    /* Footer */
+    footer { text-align: center; padding: 2rem; color: #777; font-size: 0.9rem; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="logo">SmartStudy+</div>
+    <div class="nav">
+      <a href="#" onclick="show('dashboard')">Dashboard</a>
+      <a href="#" onclick="show('users')">Utilisateurs</a>
+      <a href="#" onclick="show('add')">Ajouter</a>
+      <a href="inscrire.html">Inscription</a>
+    </div>
+  </header>
+
+  <div class="container">
+
+    <!-- Dashboard -->
+    <div id="dashboard">
+      <div class="card">
+        <h2>Tableau de bord</h2>
+        <div class="stats">
+          <div class="stat-box"><h3>124</h3><p>Utilisateurs</p></div>
+          <div class="stat-box"><h3>8</h3><p>Nouveaux (7j)</p></div>
+          <div class="stat-box"><h3>42</h3><p>En ligne</p></div>
+          <div class="stat-box"><h3>5</h3><p>Admins</p></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Utilisateurs -->
+    <div id="users" style="display:none">
+      <div class="card">
+        <h2>Gestion des utilisateurs</h2>
+        <input type="text" placeholder="Rechercher..." onkeyup="searchTable(this.value)">
+        <table id="users-table">
+          <thead>
+            <tr><th>Nom</th><th>Email</th><th>Rôle</th><th>Inscrit</th><th>Actions</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Jean Dupont</td>
+              <td>jean@example.com</td>
+              <td><strong style="color:var(--green)">Admin</strong></td>
+              <td>15/10/2025</td>
+              <td>
+                <button class="btn btn-edit">Éditer</button>
+                <button class="btn btn-delete" onclick="if(confirm('Supprimer ?')) this.parentElement.parentElement.remove()">Supprimer</button>
+                <button class="btn btn-promote">Promouvoir</button>
+              </td>
+            </tr>
+            <tr>
+              <td>Marie Curie</td>
+              <td>marie@example.com</td>
+              <td>User</td>
+              <td>01/11/2025</td>
+              <td>
+                <button class="btn btn-edit">Éditer</button>
+                <button class="btn btn-delete" onclick="if(confirm('Supprimer ?')) this.parentElement.parentElement.remove()">Supprimer</button>
+                <button class="btn btn-promote">Promouvoir</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Ajouter -->
+    <div id="add" style="display:none">
+      <div class="card">
+        <h2>Ajouter un utilisateur</h2>
+        <form onsubmit="event.preventDefault(); alert('Utilisateur ajouté !'); this.reset();">
+          <input type="text" placeholder="Nom complet" required>
+          <input type="email" placeholder="Email" required>
+          <input type="password" placeholder="Mot de passe" required>
+          <select><option>User</option><option>Admin</option></select>
+          <button type="submit">Créer</button>
+        </form>
+      </div>
+    </div>
+
+  </div>
+
+  <footer>
+    <p>SmartStudy+ © 2025 — Croissance, sérénité, apprentissage</p>
+  </footer>
+
+  <script>
+    function show(id) {
+      document.querySelectorAll('#dashboard, #users, #add').forEach(el => el.style.display = 'none');
+      document.getElementById(id).style.display = 'block';
+    }
+    function searchTable(q) {
+      const rows = document.querySelectorAll('#users-table tbody tr');
+      rows.forEach(r => r.style.display = r.textContent.toLowerCase().includes(q.toLowerCase()) ? '' : 'none');
+    }
+  </script>
+</body>
+</html>
