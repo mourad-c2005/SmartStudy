@@ -1,0 +1,8 @@
+# .htaccess (mettre à la racine smartrevision)
+RewriteEngine On
+RewriteBase /smartrevision/
+
+# redirige tout vers index.php pour gérer les routes (MVC simple)
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ index.php?url=$1 [QSA,L]

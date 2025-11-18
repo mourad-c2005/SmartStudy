@@ -1,0 +1,99 @@
+    :root {
+      --green: #4CAF50;
+      --dark: #2e7d32;
+      --light: #F8FFF8;
+      --white: #fff;
+      --yellow: #FFEB3B;
+    }
+
+    body {
+      font-family: 'Open Sans', sans-serif;
+      background: var(--light);
+      margin: 0;
+      padding-bottom: 60px;
+      color: #333;
+    }
+
+    .top-nav {
+      background: var(--white);
+      padding: 1rem 5%;
+      box-shadow: 0 4px 15px rgba(76,175,80,0.1);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+
+    .logo {
+      font-family: 'Montserrat';
+      font-weight: 700;
+      font-size: 1.6rem;
+      color: var(--green);
+      text-decoration: none;
+    }
+
+    .main-content {
+      padding: 3rem 5%;
+    }
+
+    h2 {
+      font-family: 'Montserrat';
+      color: var(--green);
+      margin-bottom: 1.5rem;
+    }
+
+    .card-form, .plan-card {
+      background: var(--white);
+      border-radius: 20px;
+      padding: 2rem;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+      margin-bottom: 2rem;
+    }
+
+    .plan-card h5 {
+      color: var(--green);
+      margin-bottom: 0.5rem;
+    }
+
+    .plan-card p {
+      margin-bottom: 0.8rem;
+    }
+
+    .btn-back {
+      display: inline-block;
+      margin-bottom: 1.5rem;
+      padding: 0.5rem 1rem;
+      border-radius: 25px;
+      background: var(--dark);
+      color: #fff;
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .btn-back:hover {
+      background: var(--green);
+    }
+
+    .btn-add {
+      background: var(--green);
+      color: #fff;
+      font-weight: 600;
+    }
+
+    .btn-add:hover {
+      background: var(--dark);
+    }
+
+    footer {
+      background: #222;
+      color: #ccc;
+      text-align: center;
+      padding: 1.5rem;
+      font-size: 0.9rem;
+    }
+
+    footer strong {
+      color: var(--yellow);
+    }
