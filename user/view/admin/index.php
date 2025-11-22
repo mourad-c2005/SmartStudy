@@ -1,3 +1,11 @@
+<?php
+session_start();
+// Vérifier si l'utilisateur est connecté et est admin, sinon rediriger
+if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'admin') {
+    header("Location: ../login.php");
+    exit;
+}
+?>
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -111,6 +119,24 @@
       background: #fdd835;
       transform: translateY(-1px);
     }
+    .back-btn {
+      background: var(--green);
+      color: white;
+      padding: 0.5rem 1.2rem;
+      border-radius: 30px;
+      font-weight: 600;
+      text-decoration: none;
+      font-size: 0.9rem;
+      transition: 0.3s;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      margin-right: 0.5rem;
+    }
+    .back-btn:hover {
+      background: var(--dark);
+      transform: translateY(-1px);
+    }
 
     /* Hero Section (Inspiré du PDF) */
     .admin-hero {
@@ -222,38 +248,43 @@
   <!-- Top Navigation -->
   <nav class="top-nav">
     <div class="left-section">
-      <a href="admin.html" class="logo">SmartStudy+</a>
-      <img src="https://via.placeholder.com/45?text=A" alt="Photo Admin" class="user-photo">
+      <a href="index.php" class="logo">SmartStudy+</a>
+      <img src="https://via.placeholder.com/45?text=<?php echo substr($_SESSION['user']['nom'], 0, 1); ?>" alt="Photo Admin" class="user-photo">
       <div class="user-info">
-        <div class="name">CHERIF Mohamed Ayoub</div>
+        <div class="name"><?php echo $_SESSION['user']['nom']; ?></div>
         <div class="role">Administrateur</div>
       </div>
     </div>
 
     <div class="nav-menu">
-      <a href="index.html" class="active">Dashboard</a>
-      <a href="users.html">users</a>
-      <a href="admin_groupes.html">Groupes</a>
-      <a href="admin_stats.html">Statistiques</a>
-      <a href="admin_export.html">Export</a>
+      <a href="index.php" class="active">Dashboard</a>
+      <a href="user.php">Utilisateurs</a>
+      <a href="admin_groupes.php">Groupes</a>
+      <a href="admin_stats.php">Statistiques</a>
+      <a href="admin_export.php">Export</a>
     </div>
 
-    <a href="login.html" class="logout-btn">
-      <i class="fas fa-sign-out-alt"></i> Se déconnecter
-    </a>
+    <div>
+      <a href="../index.php" class="back-btn">
+        <i class="fas fa-arrow-left"></i> Retour au site
+      </a>
+      <a href="../login.php" class="logout-btn">
+        <i class="fas fa-sign-out-alt"></i> Se déconnecter
+      </a>
+    </div>
   </nav>
 
   <!-- Hero Section (Inspiré du PDF) -->
   <div class="admin-hero">
     <h1>INNOVATION ADMINISTRATIVE</h1>
-    <p></p>
+    <p>Gestion complète de la plateforme SmartStudy+</p>
   </div>
 
   <!-- Admin Modules -->
   <div class="main-content">
     <div class="row g-4">
       <div class="col-md-4">
-        <a href="admin_users.html" class="text-decoration-none">
+        <a href="users.php" class="text-decoration-none">
           <div class="admin-card">
             <i class="fas fa-users-cog"></i>
             <h5>Gestion Utilisateurs</h5>
@@ -262,7 +293,7 @@
         </a>
       </div>
       <div class="col-md-4">
-        <a href="admin_groupes.html" class="text-decoration-none">
+        <a href="admin_groupes.php" class="text-decoration-none">
           <div class="admin-card">
             <i class="fas fa-user-friends"></i>
             <h5>Gestion Groupes</h5>
@@ -271,7 +302,7 @@
         </a>
       </div>
       <div class="col-md-4">
-        <a href="admin_stats.html" class="text-decoration-none">
+        <a href="admin_stats.php" class="text-decoration-none">
           <div class="admin-card">
             <i class="fas fa-chart-bar"></i>
             <h5>Statistiques Globales</h5>
@@ -283,7 +314,7 @@
 
     <div class="row g-4 mt-3">
       <div class="col-md-6">
-        <a href="admin_export.html" class="text-decoration-none">
+        <a href="admin_export.php" class="text-decoration-none">
           <div class="admin-card">
             <i class="fas fa-file-export"></i>
             <h5>Export PDF / CSV</h5>
@@ -292,7 +323,7 @@
         </a>
       </div>
       <div class="col-md-6">
-        <a href="admin_settings.html" class="text-decoration-none">
+        <a href="admin_settings.php" class="text-decoration-none">
           <div class="admin-card">
             <i class="fas fa-cogs"></i>
             <h5>Paramètres Système</h5>
