@@ -1,0 +1,12 @@
+# Set index.php as the default directory index
+DirectoryIndex index.php index.html
+
+# Enable URL rewriting (if needed for future features)
+RewriteEngine On
+
+# Prevent directory listing
+Options -Indexes
+
+# Set default charset
+AddDefaultCharset UTF-8
+

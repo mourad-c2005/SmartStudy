@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Mes Plans | SmartStudy+</title>
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <style>
+    :root {
+      --green: #4CAF50;
+      --yellow: #FFEB3B;
+      --light: #E8F5E8;
+      --white: #ffffff;
+      --dark: #2e7d32;
+    }
+    * { box-sizing: border-box; }
+    body {
+      font-family: 'Open Sans', sans-serif;
+      background: var(--light);
+      color: #333;
+      margin: 0;
+      padding-bottom: 60px;
+    }
+
+    /* Top Navigation */
+    .top-nav {
+      background: var(--white);
+      padding: 1rem 5%;
+      box-shadow: 0 4px 15px rgba(76, 175, 80, 0.1);
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .logo {
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 700;
+      font-size: 1.8rem;
+      color: var(--green);
+      text-decoration: none;
+    }
+    .nav-menu {
+      display: flex;
+      gap: 1.5rem;
+    }
+    .nav-menu a {
+      color: #555;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 1rem;
+      padding: 0.5rem 1rem;
+      border-radius: 30px;
+      transition: 0.3s;
+    }
+    .nav-menu a:hover, .nav-menu a.active {
+      background: var(--light);
+      color: var(--green);
+    }
+
+    /* User Section */
+    .user-section {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .user-info {
+      text-align: right;
+    }
+    .user-info .name {
+      font-weight: 600;
+      color: #333;
+    }
+    .user-info .role {
+      font-size: 0.85rem;
+      color: #777;
+    }
+    .user-photo {
+      width: 45px;
+      height: 45px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid var(--green);
+    }
+    .logout-btn {
+      background: var(--yellow);
+      color: #333;
+      padding: 0.5rem 1rem;
+      border-radius: 30px;
+      font-weight: 600;
+      text-decoration: none;
+      font-size: 0.9rem;
+      transition: 0.3s;
+    }
+    .logout-btn:hover {
+      background: #fdd835;
+      transform: translateY(-1px);
+    }
+
+    /* Main Content */
+    .main-content {
+      padding: 3rem 5%;
+    }
+    .page-header {
+      background: var(--white);
+      border-radius: 20px;
+      padding: 2rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    }
+    .page-header h1 {
+      font-family: 'Montserrat', sans-serif;
+      color: var(--green);
+      font-size: 2.5rem;
+      margin: 0;
+    }
+
+    .plan-card {
+      background: var(--white);
+      border-radius: 16px;
+      padding: 2rem;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+      border-left: 5px solid var(--green);
+      margin-bottom: 1.5rem;
+      transition: transform 0.3s;
+    }
+    .plan-card:hover {
+      transform: translateY(-3px);
+    }
+    .plan-card h3 {
+      font-family: 'Montserrat', sans-serif;
+      color: var(--green);
+      margin-bottom: 1rem;
+    }
+    .plan-card .badge {
+      background: var(--yellow);
+      color: #333;
+      padding: 0.3rem 0.8rem;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+    .plan-card .progress {
+      height: 10px;
+      border-radius: 10px;
+      background: #e0e0e0;
+      margin-top: 1rem;
+    }
+    .plan-card .progress-bar {
+      background: var(--green);
+      border-radius: 10px;
+    }
+
+    .btn-add {
+      background: var(--green);
+      color: white;
+      padding: 0.8rem 2rem;
+      border-radius: 30px;
+      font-weight: 600;
+      text-decoration: none;
+      display: inline-block;
+      transition: 0.3s;
+      border: none;
+      cursor: pointer;
+    }
+    .btn-add:hover {
+      background: var(--dark);
+      transform: translateY(-2px);
+    }
+
+    @media (max-width: 992px) {
+      .top-nav { flex-direction: column; gap: 1rem; padding: 1rem; }
+      .nav-menu { order: 3; flex-wrap: wrap; justify-content: center; }
+      .main-content { padding: 2rem 3%; }
+      .user-section { flex-direction: column; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Navigation -->
+  <nav class="top-nav">
+    <a href="index.php" class="logo">SmartStudy+</a>
+    <div class="nav-menu">
+      <a href="index.php">Accueil</a>
+      <a href="mesplans.html" class="active">Mes Plans</a>
+      <a href="planning.html">Planning</a>
+      <a href="groupes.html">Groupes</a>
+      <a href="progres.html">Progrès</a>
+    </div>
+    <div class="user-section">
+      <div class="user-info">
+        <div class="name">CHERIF Mohamed Ayoub</div>
+        <div class="role">Étudiant</div>
+      </div>
+      <img src="https://via.placeholder.com/45?text=A" alt="Photo" class="user-photo">
+      <a href="login.html" class="logout-btn">
+        <i class="fas fa-sign-out-alt"></i> Se déconnecter
+      </a>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <div class="page-header">
+      <h1><i class="fas fa-brain"></i> Mes Plans d'Étude</h1>
+      <p class="mt-3">Plans personnalisés selon vos examens et objectifs</p>
+    </div>
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h2>Plans Actifs</h2>
+      <button class="btn-add">
+        <i class="fas fa-plus"></i> Créer un nouveau plan
+      </button>
+    </div>
+
+    <div class="plan-card">
+      <div class="d-flex justify-content-between align-items-start mb-2">
+        <h3>Plan Mathématiques - Bac 2025</h3>
+        <span class="badge">En cours</span>
+      </div>
+      <p class="text-muted">Objectif: Réussir l'examen de mathématiques avec une note minimale de 15/20</p>
+      <div class="d-flex gap-3 mb-2">
+        <small><i class="fas fa-calendar"></i> Début: 01/01/2025</small>
+        <small><i class="fas fa-flag-checkered"></i> Fin: 15/06/2025</small>
+      </div>
+      <div class="progress">
+        <div class="progress-bar" style="width: 65%"></div>
+      </div>
+      <small class="text-muted">65% complété</small>
+    </div>
+
+    <div class="plan-card">
+      <div class="d-flex justify-content-between align-items-start mb-2">
+        <h3>Plan Physique-Chimie</h3>
+        <span class="badge">En cours</span>
+      </div>
+      <p class="text-muted">Révision complète du programme de physique et chimie</p>
+      <div class="d-flex gap-3 mb-2">
+        <small><i class="fas fa-calendar"></i> Début: 10/01/2025</small>
+        <small><i class="fas fa-flag-checkered"></i> Fin: 20/06/2025</small>
+      </div>
+      <div class="progress">
+        <div class="progress-bar" style="width: 42%"></div>
+      </div>
+      <small class="text-muted">42% complété</small>
+    </div>
+
+    <div class="plan-card">
+      <div class="d-flex justify-content-between align-items-start mb-2">
+        <h3>Plan Langues - Anglais</h3>
+        <span class="badge" style="background: #ccc;">Terminé</span>
+      </div>
+      <p class="text-muted">Amélioration du niveau d'anglais pour l'examen</p>
+      <div class="d-flex gap-3 mb-2">
+        <small><i class="fas fa-calendar"></i> Début: 01/12/2024</small>
+        <small><i class="fas fa-flag-checkered"></i> Fin: 31/12/2024</small>
+      </div>
+      <div class="progress">
+        <div class="progress-bar" style="width: 100%"></div>
+      </div>
+      <small class="text-muted">100% complété</small>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+
