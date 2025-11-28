@@ -1,0 +1,509 @@
+<?php
+// inscrire.php
+session_start();
+
+// Include database configuration
+require_once '../config/database.php';
+require_once '../model/User.php';
+
+// $pdo is already available from database.php include
+$userModel = new User($pdo);
+
+// Check if user is already logged in
+
+
+// Handle form submission
+$alert_message = '';
+$alert_type = '';
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $nom = trim($_POST['nom'] ?? '');
+    $email = trim($_POST['email'] ?? '');
+    $password = $_POST['password'] ?? '';
+    $confirmPassword = $_POST['confirm-password'] ?? '';
+    $role = $_POST['role'] ?? '';
+    $date_naissance = $_POST['date_naissance'] ?? '';
+    $etablissement = $_POST['etablissement'] ?? '';
+    $niveau = $_POST['niveau'] ?? '';
+    $twitter = trim($_POST['twitter'] ?? '');
+    $linkedin = trim($_POST['linkedin'] ?? '');
+    $github = trim($_POST['github'] ?? '');
+
+    // Validation
+    if (empty($nom) || empty($email) || empty($password) || empty($confirmPassword) || empty($role)) {
+        $alert_message = 'Veuillez remplir tous les champs obligatoires';
+        $alert_type = 'error';
+    } elseif ($password !== $confirmPassword) {
+        $alert_message = 'Les mots de passe ne correspondent pas';
+        $alert_type = 'error';
+    } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $alert_message = 'Veuillez entrer un email valide';
+        $alert_type = 'error';
+    } elseif ($userModel->emailExists($email)) {
+        $alert_message = 'Cet email est déjà utilisé';
+        $alert_type = 'error';
+    } else {
+        // Create user
+        $userData = [
+            'nom' => $nom,
+            'email' => $email,
+            'password' => $password,
+            'role' => $role,
+            'date_naissance' => $date_naissance ?: null,
+            'etablissement' => $etablissement ?: null,
+            'niveau' => $niveau ?: null,
+            'twitter' => $twitter ?: null,
+            'linkedin' => $linkedin ?: null,
+            'github' => $github ?: null
+        ];
+
+        $user = $userModel->create($userData);
+        
+        if ($user) {
+            // Store user in session
+            $_SESSION['user_id'] = $user['id'];
+            $_SESSION['user'] = $user;
+            
+            // Redirection avec paramètre de succès
+            header("Location: inscrire.php?success=1");
+            exit;
+        } else {
+            $alert_message = 'Erreur lors de l\'inscription';
+            $alert_type = 'error';
+        }
+    }
+}
+?>
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SmartStudy+ | Inscription</title>
+
+  <!-- Fonts & Icons -->
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+
+  <style>
+    :root {
+      --green: #4CAF50; --bg: #f8fbf8; --white: #ffffff; --text: #2e7d32;
+      --border: #e0e0e0; --error: #e74c3c; --sidebar: #e8f5e9; --success: #27ae60;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Open Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; }
+    header { background: var(--white); padding: 1.2rem 5%; box-shadow: 0 4px 20px rgba(76, 175, 80, 0.1); text-align: center; }
+    .logo { display: flex; align-items: center; justify-content: center; gap: 0.5rem; font-family: 'Montserrat', sans-serif; font-weight: 700; font-size: 2rem; color: var(--green); }
+    .logo svg { width: 2.5rem; height: 2.5rem; fill: var(--green); }
+
+    .main-container { flex: 1; display: flex; padding: 2rem 5%; gap: 2rem; max-width: 1300px; margin: 0 auto; }
+
+    /* LEFT: Social Links */
+    .sidebar {
+      background: var(--sidebar);
+      padding: 2rem 1.5rem;
+      border-radius: 16px;
+      width: 280px;
+      min-width: 240px;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.06);
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    .sidebar h3 { font-family: 'Montserrat', sans-serif; color: var(--green); text-align: center; font-size: 1.3rem; }
+    .social-group label { font-weight: 600; font-size: 0.9rem; color: #444; margin-bottom: 0.4rem; display: block; }
+    .social-group input { width: 100%; padding: 0.8rem; border: 1px solid var(--border); border-radius: 10px; background: #fff; font-size: 0.9rem; }
+    .social-group input:focus { outline: none; border-color: var(--green); box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.15); }
+
+    .card { background: var(--white); border-radius: 18px; padding: 2.5rem; flex: 1; max-width: 520px; box-shadow: 0 12px 35px rgba(0, 0, 0, 0.08); border-top: 6px solid var(--green); }
+    .card h2 { font-family: 'Montserrat', sans-serif; color: var(--green); margin-bottom: 0.5rem; font-size: 1.8rem; text-align: center; }
+    .card p { color: #666; margin-bottom: 1.8rem; font-size: 0.95rem; text-align: center; }
+
+    input, select, button { width: 100%; padding: 0.95rem; margin: 0.7rem 0; border: 1px solid var(--border); border-radius: 12px; font-size: 1rem; transition: 0.3s; }
+    input, select { background: #fafafa; }
+    input:focus, select:focus { outline: none; border-color: var(--green); box-shadow: 0 0 0 4px rgba(76, 175, 80, 0.15); }
+    input.error, select.error { border-color: var(--error); box-shadow: 0 0 0 4px rgba(231, 76, 60, 0.15); }
+    button { background: var(--green); color: white; font-weight: 600; cursor: pointer; border: none; margin-top: 1rem; }
+    button:hover { background: #43a047; }
+
+    .error-msg { color: var(--error); font-size: 0.85rem; margin-top: 0.3rem; display: flex; align-items: center; gap: 0.4rem; display: none; }
+    .error-msg i { font-size: 1rem; }
+
+    .alert { padding: 1rem; margin: 1rem 0; border-radius: 10px; font-size: 0.9rem; }
+    .alert-error { background: #ffebee; color: #c62828; border: 1px solid #ffcdd2; }
+    .alert-success { background: #e8f5e8; color: #2e7d32; border: 1px solid #c8e6c9; }
+
+    .links { margin-top: 1.2rem; text-align: center; font-size: 0.9rem; }
+    .links a { color: var(--green); text-decoration: none; font-weight: 600; }
+    .links a:hover { text-decoration: underline; }
+
+    footer { text-align: center; padding: 1.5rem; color: #777; font-size: 0.9rem; background: #e8f5e5; }
+
+    /* Modal de succès */
+    .success-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.5);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+    }
+    
+    .success-modal-content {
+      background: white;
+      padding: 2rem;
+      border-radius: 18px;
+      text-align: center;
+      max-width: 400px;
+      width: 90%;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+      border-top: 6px solid var(--green);
+    }
+    
+    .success-modal h3 {
+      color: var(--green);
+      font-family: 'Montserrat', sans-serif;
+      margin-bottom: 1rem;
+      font-size: 1.5rem;
+    }
+    
+    .success-modal p {
+      margin-bottom: 1.5rem;
+      color: #666;
+    }
+    
+    .success-modal button {
+      background: var(--green);
+      color: white;
+      border: none;
+      padding: 0.8rem 2rem;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 1rem;
+    }
+    
+    .success-modal button:hover {
+      background: #43a047;
+    }
+
+    @media (max-width: 992px) {
+      .main-container { flex-direction: column; }
+      .sidebar, .card { width: 100%; max-width: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Modal de succès -->
+  <div class="success-modal" id="successModal">
+    <div class="success-modal-content">
+      <i class="fas fa-check-circle" style="font-size: 3rem; color: var(--green); margin-bottom: 1rem;"></i>
+      <h3>Inscription réussie !</h3>
+      <p>Votre compte a été créé avec succès. Vous allez être redirigé vers votre profil.</p>
+      <button onclick="redirectToProfile()">Continuer</button>
+    </div>
+  </div>
+
+  <header>
+    <div class="logo">
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M19 3H5C3.9 3 3 3.9 3 5V19C3 20.1 3.9 21 5 21H19C20.1 21 21 20.1 21 19V5C21 3.9 20.1 3 19 3ZM7 17H17V15H7V17ZM7 13H17V11H7V13ZM7 9H17V7H7V9Z"/>
+        <path d="M5 21V19H3V21H5ZM21 19C21 20.1 20.1 21 19 21H5C3.9 21 3 20.1 3 19H5V21H19V19H21Z"/>
+        <path d="M12 2L13.09 8.26L19 9L15.5 13.74L16.59 20L12 16.81L7.41 20L8.5 13.74L5 9L10.91 8.26L12 2Z"/>
+      </svg>
+      SmartStudy+
+    </div>
+  </header>
+
+  <div class="main-container">
+    <!-- LEFT: Social Links (Optional) -->
+    <div class="sidebar">
+      <h3>Réseaux sociaux (Optionnel)</h3>
+      <div class="social-group">
+        <label for="twitter">Twitter</label>
+        <input type="url" id="twitter" placeholder="https://twitter.com/...">
+      </div>
+      <div class="social-group">
+        <label for="linkedin">LinkedIn</label>
+        <input type="url" id="linkedin" placeholder="https://linkedin.com/...">
+      </div>
+      <div class="social-group">
+        <label for="github">GitHub</label>
+        <input type="url" id="github" placeholder="https://github.com/...">
+      </div>
+    </div>
+
+    <!-- CENTER: Registration Form -->
+    <div class="card" id="formCard">
+      <h2>Inscription</h2>
+      <p>Rejoignez une communauté d'apprentissage sereine</p>
+
+      <div id="alert-container">
+        <?php if ($alert_message): ?>
+          <div class="alert alert-<?php echo $alert_type; ?>">
+            <i class="fas fa-<?php echo $alert_type === 'success' ? 'check-circle' : 'exclamation-triangle'; ?>"></i> 
+            <?php echo htmlspecialchars($alert_message); ?>
+          </div>
+        <?php endif; ?>
+      </div>
+
+      <form id="inscriptionForm" method="POST" action="">
+        <input type="text" id="nom" name="nom" placeholder="Nom complet" value="<?php echo isset($_POST['nom']) ? htmlspecialchars($_POST['nom']) : ''; ?>">
+        <div class="error-msg" id="nomError"><i class="fas fa-exclamation-circle"></i> <span></span></div>
+
+        <input type="email" id="email" name="email" placeholder="Email (ex: nom@gmail.com)" value="<?php echo isset($_POST['email']) ? htmlspecialchars($_POST['email']) : ''; ?>">
+        <div class="error-msg" id="emailError"><i class="fas fa-exclamation-circle"></i> <span></span></div>
+
+        <input type="password" id="password" name="password" placeholder="Mot de passe">
+        <div class="error-msg" id="passwordError"><i class="fas fa-exclamation-circle"></i> <span></span></div>
+        
+        <input type="password" id="confirm-password" name="confirm-password" placeholder="Confirmer le mot de passe">
+        <div class="error-msg" id="confirmPasswordError"><i class="fas fa-exclamation-circle"></i> <span></span></div>
+
+        <input type="date" id="date_naissance" name="date_naissance" value="<?php echo isset($_POST['date_naissance']) ? htmlspecialchars($_POST['date_naissance']) : ''; ?>">
+        <div class="error-msg" id="ageError"><i class="fas fa-exclamation-circle"></i> <span></span></div>
+
+        <select id="etablissement" name="etablissement">
+          <option value="" disabled selected>Établissement</option>
+          <option value="lycee" <?php echo (isset($_POST['etablissement']) && $_POST['etablissement'] === 'lycee') ? 'selected' : ''; ?>>Lycée</option>
+          <option value="universite" <?php echo (isset($_POST['etablissement']) && $_POST['etablissement'] === 'universite') ? 'selected' : ''; ?>>Université</option>
+          <option value="ecole" <?php echo (isset($_POST['etablissement']) && $_POST['etablissement'] === 'ecole') ? 'selected' : ''; ?>>École d'ingénieurs</option>
+          <option value="autre" <?php echo (isset($_POST['etablissement']) && $_POST['etablissement'] === 'autre') ? 'selected' : ''; ?>>Autre</option>
+        </select>
+
+        <select id="niveau" name="niveau">
+          <option value="" disabled selected>Niveau / Grade</option>
+          <option value="1ere" <?php echo (isset($_POST['niveau']) && $_POST['niveau'] === '1ere') ? 'selected' : ''; ?>>1ère année</option>
+          <option value="2eme" <?php echo (isset($_POST['niveau']) && $_POST['niveau'] === '2eme') ? 'selected' : ''; ?>>2ème année</option>
+          <option value="3eme" <?php echo (isset($_POST['niveau']) && $_POST['niveau'] === '3eme') ? 'selected' : ''; ?>>3ème année</option>
+          <option value="4eme" <?php echo (isset($_POST['niveau']) && $_POST['niveau'] === '4eme') ? 'selected' : ''; ?>>4ème année</option>
+          <option value="5eme" <?php echo (isset($_POST['niveau']) && $_POST['niveau'] === '5eme') ? 'selected' : ''; ?>>5ème année</option>
+          <option value="master" <?php echo (isset($_POST['niveau']) && $_POST['niveau'] === 'master') ? 'selected' : ''; ?>>Master</option>
+          <option value="doctorat" <?php echo (isset($_POST['niveau']) && $_POST['niveau'] === 'doctorat') ? 'selected' : ''; ?>>Doctorat</option>
+        </select>
+
+        <select id="role" name="role">
+          <option value="" disabled selected>Choisir un rôle</option>
+          <option value="etudiant" <?php echo (isset($_POST['role']) && $_POST['role'] === 'etudiant') ? 'selected' : ''; ?>>Étudiant</option>
+          <option value="professeur" <?php echo (isset($_POST['role']) && $_POST['role'] === 'professeur') ? 'selected' : ''; ?>>Professeur</option>
+        </select>
+
+        <!-- Hidden fields for social links -->
+        <input type="hidden" id="twitter_hidden" name="twitter">
+        <input type="hidden" id="linkedin_hidden" name="linkedin">
+        <input type="hidden" id="github_hidden" name="github">
+
+        <button type="submit">S'inscrire</button>
+      </form>
+
+      <div class="links">
+        <p>Déjà un compte ? <a href="login.php">Se connecter</a></p>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <p>SmartStudy+ © 2025 — Nature • Croissance • Sérénité</p>
+  </footer>
+
+  <script>
+    console.log("Validation JavaScript chargée !");
+
+    // Fonction pour rediriger vers le profil
+    function redirectToProfile() {
+      window.location.href = 'profile.php';
+    }
+
+    // Afficher le modal de succès si l'inscription a réussi
+    document.addEventListener('DOMContentLoaded', () => {
+      // Vérifier le paramètre d'URL pour le succès
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('success') === '1') {
+        const successModal = document.getElementById('successModal');
+        if (successModal) {
+          successModal.style.display = 'flex';
+          
+          // Redirection automatique après 3 secondes
+          setTimeout(() => {
+            redirectToProfile();
+          }, 3000);
+        }
+      }
+
+      const form = document.getElementById('inscriptionForm');
+      if (!form) return console.error("Formulaire non trouvé");
+
+      // === CHAMPS SÉCURISÉS ===
+      const getEl = (id) => {
+        const el = document.getElementById(id);
+        if (!el) console.error(`Champ manquant : #${id}`);
+        return el;
+      };
+
+      const inputs = {
+        nom: getEl('nom'),
+        email: getEl('email'),
+        password: getEl('password'),
+        confirmPassword: getEl('confirm-password'),
+        dateNaissance: getEl('date_naissance'),
+        etablissement: getEl('etablissement'),
+        niveau: getEl('niveau'),
+        role: getEl('role'),
+        twitter: getEl('twitter'),
+        linkedin: getEl('linkedin'),
+        github: getEl('github')
+      };
+
+      // Arrête si un champ obligatoire manque
+      const requiredFields = ['nom', 'email', 'password', 'confirmPassword', 'role'];
+      if (requiredFields.some(field => !inputs[field])) return;
+
+      // === ERREURS ===
+      const showError = (field, msg) => {
+        const errorEl = document.getElementById(field + 'Error');
+        if (errorEl && inputs[field]) {
+          errorEl.querySelector('span').textContent = msg;
+          errorEl.style.display = 'flex';
+          inputs[field].classList.add('error');
+        }
+      };
+
+      const hideError = (field) => {
+        const errorEl = document.getElementById(field + 'Error');
+        if (errorEl && inputs[field]) {
+          errorEl.style.display = 'none';
+          inputs[field].classList.remove('error');
+        }
+      };
+
+      // === VALIDATION EN TEMPS RÉEL ===
+      inputs.nom.addEventListener('input', () => {
+        const v = inputs.nom.value.trim();
+        if (v && /\d/.test(v)) {
+          showError('nom', 'Le nom ne doit pas contenir de chiffres');
+        } else {
+          hideError('nom');
+        }
+      });
+
+      inputs.email.addEventListener('input', () => {
+        const v = inputs.email.value.trim().toLowerCase();
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (v && !emailRegex.test(v)) {
+          showError('email', 'Veuillez entrer un email valide');
+        } else {
+          hideError('email');
+        }
+      });
+
+      inputs.dateNaissance.addEventListener('change', () => {
+        const birth = new Date(inputs.dateNaissance.value);
+        const today = new Date();
+        let age = today.getFullYear() - birth.getFullYear();
+        const m = today.getMonth() - birth.getMonth();
+        if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
+        
+        if (inputs.dateNaissance.value && age < 13) {
+          showError('age', 'Âge minimum : 13 ans');
+        } else {
+          hideError('age');
+        }
+      });
+
+      inputs.password.addEventListener('input', () => {
+        const password = inputs.password.value;
+        if (password && password.length < 6) {
+          showError('password', 'Le mot de passe doit contenir au moins 6 caractères');
+        } else {
+          hideError('password');
+        }
+      });
+
+      inputs.confirmPassword.addEventListener('input', () => {
+        const password = inputs.password.value;
+        const confirmPassword = inputs.confirmPassword.value;
+        if (confirmPassword && password !== confirmPassword) {
+          showError('confirmPassword', 'Les mots de passe ne correspondent pas');
+        } else {
+          hideError('confirmPassword');
+        }
+      });
+
+      // === VALIDATION AVANT SOUMISSION ===
+      form.addEventListener('submit', e => {
+        e.preventDefault();
+        
+        // Reset errors
+        ['nom', 'email', 'age', 'password', 'confirmPassword'].forEach(hideError);
+
+        let isValid = true;
+
+        // Validation des champs obligatoires
+        if (!inputs.nom.value.trim()) {
+          showError('nom', 'Le nom complet est obligatoire');
+          isValid = false;
+        }
+
+        if (!inputs.email.value.trim()) {
+          showError('email', 'L\'email est obligatoire');
+          isValid = false;
+        } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(inputs.email.value.trim())) {
+          showError('email', 'Veuillez entrer un email valide');
+          isValid = false;
+        }
+
+        if (!inputs.password.value) {
+          showError('password', 'Le mot de passe est obligatoire');
+          isValid = false;
+        } else if (inputs.password.value.length < 6) {
+          showError('password', 'Le mot de passe doit contenir au moins 6 caractères');
+          isValid = false;
+        }
+
+        if (!inputs.confirmPassword.value) {
+          showError('confirmPassword', 'Veuillez confirmer le mot de passe');
+          isValid = false;
+        } else if (inputs.password.value !== inputs.confirmPassword.value) {
+          showError('confirmPassword', 'Les mots de passe ne correspondent pas');
+          isValid = false;
+        }
+
+        if (!inputs.role.value) {
+          alert('Veuillez sélectionner un rôle');
+          isValid = false;
+        }
+
+        // Validation âge
+        if (inputs.dateNaissance.value) {
+          const birth = new Date(inputs.dateNaissance.value);
+          const today = new Date();
+          let age = today.getFullYear() - birth.getFullYear();
+          const m = today.getMonth() - birth.getMonth();
+          if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
+          
+          if (age < 13) {
+            showError('age', 'Âge minimum : 13 ans');
+            isValid = false;
+          }
+        }
+
+        if (isValid) {
+          // Copier les valeurs des réseaux sociaux dans les champs cachés
+          document.getElementById('twitter_hidden').value = inputs.twitter.value.trim();
+          document.getElementById('linkedin_hidden').value = inputs.linkedin.value.trim();
+          document.getElementById('github_hidden').value = inputs.github.value.trim();
+          
+          // Soumettre le formulaire
+          form.submit();
+        }
+      });
+    });
+  </script>
+</body>
+</html>
