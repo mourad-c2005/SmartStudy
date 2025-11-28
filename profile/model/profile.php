@@ -9,80 +9,100 @@ class Profile
         $this->pdo = $pdo;
     }
 
-    /** Garantit qu’un utilisateur a un profil (crée s’il n’existe pas) */
+    /** Garantit qu'un utilisateur a un profil (crée s'il n'existe pas) */
     public function ensureExists(int $userId): void
-{
-    $check = $this->pdo->prepare("SELECT 1 FROM profile WHERE id = ?");
-    $check->execute([$userId]);
-    if ($check->fetchColumn()) return; // déjà existant
+    {
+        // Vérification avec PDO
+        $check = $this->pdo->prepare("SELECT 1 FROM profile WHERE id = ?");
+        $check->execute([$userId]);
+        
+        if ($check->fetchColumn()) {
+            return; // déjà existant
+        }
 
-    // Récupérer les données depuis users
-    $stmt = $this->pdo->prepare("
-        SELECT nom, email, role, date_naissance, etablissement, niveau, 
-               twitter, linkedin, github 
-        FROM users WHERE id = ?
-    ");
-    $stmt->execute([$userId]);
-    $data = $stmt->fetch(PDO::FETCH_ASSOC);
+        // Récupération des données utilisateur avec PDO
+        $stmt = $this->pdo->prepare("
+            SELECT nom, email, date_naissance, etablissement, niveau, 
+                   twitter, linkedin, github 
+            FROM users WHERE id = ?
+        ");
+        $stmt->execute([$userId]);
+        $data = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    if (!$data) return;
+        if (!$data) {
+            return;
+        }
 
-    // Préparer les valeurs (NULL si vide)
-    $date_naissance = $data['date_naissance'] ?: null;
-    $etablissement  = $data['etablissement'] ?: null;
-    $niveau         = $data['niveau'] ?: null;
-    $twitter        = $data['twitter'] ?: null;
-    $linkedin       = $data['linkedin'] ?: null;
-    $github         = $data['github'] ?: null;
+        // Insertion avec PDO
+        $sql = "INSERT INTO profile 
+                (id, nom, email, date_naissance, etablissement, niveau, 
+                 twitter, linkedin, github, date_creation, text, img_per)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, CURDATE(), NULL, NULL)";
 
-    $sql = "INSERT INTO profile 
-            (id, nom, email, role, date_naissance, etablissement, niveau, 
-             twitter, linkedin, github, date_creation, text, img_per)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURDATE(), NULL, NULL)";
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute([
+            $userId,
+            $data['nom'],
+            $data['email'],
+            $data['date_naissance'] ?? null,
+            $data['etablissement'] ?? null,
+            $data['niveau'] ?? null,
+            $data['twitter'] ?? null,
+            $data['linkedin'] ?? null,
+            $data['github'] ?? null
+        ]);
+    }
 
-    $this->pdo->prepare($sql)->execute([
-        $userId,
-        $data['nom'],
-        $data['email'],
-        $data['role'] ?? 'etudiant',
-        $date_naissance,
-        $etablissement,
-        $niveau,
-        $twitter,
-        $linkedin,
-        $github
-    ]);
-}
-
-    /** Récupère le profil complet */
+    /** Récupère le profil complet avec PDO */
     public function getById(int $id): ?array
     {
         $stmt = $this->pdo->prepare("SELECT * FROM profile WHERE id = ?");
         $stmt->execute([$id]);
-        return $stmt->fetch(PDO::FETCH_ASSOC) ?: null;
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        return $result ?: null;
     }
 
-    /** Met à jour le profil + synchronise users (nom, email, role) */
+    /** Met à jour le profil avec PDO + synchronise users */
     public function update(int $id, array $data): bool
     {
-        $sql = "UPDATE profile SET 
-                nom = ?, email = ?, text = ?, role = ?, date_naissance = ?,
-                etablissement = ?, niveau = ?, twitter = ?, linkedin = ?, github = ?
-                WHERE id = ?";
+        try {
+            // Début de transaction PDO
+            $this->pdo->beginTransaction();
 
-        $stmt = $this->pdo->prepare($sql);
-        $ok = $stmt->execute([
-            $data['nom'], $data['email'], $data['text'] ?? null, $data['role'],
-            $data['date_naissance'], $data['etablissement'], $data['niveau'],
-            $data['twitter'] ?? null, $data['linkedin'] ?? null, $data['github'] ?? null,
-            $id
-        ]);
+            // Mise à jour du profil avec PDO
+            $sql = "UPDATE profile SET 
+                    nom = ?, email = ?, text = ?, date_naissance = ?,
+                    etablissement = ?, niveau = ?, twitter = ?, linkedin = ?, github = ?
+                    WHERE id = ?";
 
-        // Synchroniser aussi dans users (important pour le login)
-        if ($ok) {
-            $this->pdo->prepare("UPDATE users SET nom = ?, email = ?, role = ? WHERE id = ?")
-                      ->execute([$data['nom'], $data['email'], $data['role'], $id]);
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute([
+                $data['nom'], 
+                $data['email'], 
+                $data['text'] ?? null, 
+                $data['date_naissance'] ?? null, 
+                $data['etablissement'] ?? null, 
+                $data['niveau'] ?? null,
+                $data['twitter'] ?? null, 
+                $data['linkedin'] ?? null, 
+                $data['github'] ?? null,
+                $id
+            ]);
+
+            // Synchronisation dans users avec PDO
+            $userStmt = $this->pdo->prepare("UPDATE users SET nom = ?, email = ? WHERE id = ?");
+            $userStmt->execute([$data['nom'], $data['email'], $id]);
+
+            // Validation de la transaction PDO
+            $this->pdo->commit();
+            return true;
+
+        } catch (Exception $e) {
+            // Annulation en cas d'erreur
+            $this->pdo->rollBack();
+            error_log("Erreur PDO update(): " . $e->getMessage());
+            return false;
         }
-        return $ok;
     }
 }
