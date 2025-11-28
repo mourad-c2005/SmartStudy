@@ -11,25 +11,31 @@ class QuizController extends Controller {
     }
 
     public function index($id_cours = null) {
-        if (!$id_cours) {
-            header('Location: ' . URLROOT);
-            exit;
-        }
-
-        $cours = $this->coursModel->getById($id_cours);
-        if (!$cours) die("Cours introuvable.");
-
-        $questions = $this->quizModel->getAllByCours($id_cours);
-
-        $data = [
-            'cours' => $cours,
-            'questions' => $questions ? array_slice($questions, 0, 20) : []
-        ];
-
-        $this->view('layout');
-        $this->view('quiz/index', $data);
+    if (!$id_cours) {
+        header('Location: ' . URLROOT);
+        exit;
     }
 
+    $cours = $this->coursModel->getById($id_cours);
+
+    if (!$cours) {
+        // Si le cours n'existe pas, rediriger vers la page d'accueil ou afficher un message
+        header('Location: ' . URLROOT);
+        exit;
+    }
+
+    // Maintenant que $cours existe, on peut récupérer les questions
+    $questions = $this->quizModel->getAllByCours($id_cours);
+
+    $data = [
+        'cours' => $cours,
+        'questions' => $questions ? array_slice($questions, 0, 20) : []
+    ];
+
+    $this->view('layout');
+    $this->view('quiz/index', $data);
+}
+ 
     public function submit($id_cours = null) {
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             http_response_code(405);

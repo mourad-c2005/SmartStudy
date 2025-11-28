@@ -5,7 +5,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $user = $_POST['username'];
     $pass = $_POST['password'];
 
-    // Identifiants simples (tu peux les changer)
     if ($user === 'admin' && $pass === '1234') {
         $_SESSION['admin_logged'] = true;
         header('Location: index.php');
@@ -25,12 +24,36 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <body class="login-page">
   <div class="login-card">
     <h2>Connexion administrateur</h2>
-    <?php if (!empty($error)): ?><p class="error"><?= $error ?></p><?php endif; ?>
-    <form method="POST">
-      <input type="text" name="username" placeholder="Nom d'utilisateur" required><br>
-      <input type="password" name="password" placeholder="Mot de passe" required><br>
+
+    <?php if (!empty($error)): ?>
+        <p class="error"><?= $error ?></p>
+    <?php endif; ?>
+
+    <form id="loginForm" method="POST">
+      <input type="text" id="username" name="username" placeholder="Nom d'utilisateur"><br>
+      <input type="password" id="password" name="password" placeholder="Mot de passe"><br>
+
+      <p id="formError" class="error" style="display:none;"></p>
+
       <button type="submit">Se connecter</button>
     </form>
   </div>
+
+  <script>
+      document.getElementById('loginForm').addEventListener('submit', function(e){
+          const username = document.getElementById('username').value.trim();
+          const password = document.getElementById('password').value.trim();
+          const errorBox = document.getElementById('formError');
+
+          errorBox.style.display = "none";
+          errorBox.innerText = "";
+
+          if(username === "" || password === ""){
+              e.preventDefault();
+              alert("Veuillez remplir tous les champs.");
+              errorBox.style.display = "block";
+          }
+      });
+  </script>
 </body>
 </html>

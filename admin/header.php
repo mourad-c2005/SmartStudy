@@ -10,7 +10,7 @@
 <nav class="admin-nav">
   <h2>SmartRevision+ <span>Back Office</span></h2>
   <ul>
-    <li><a href="../quiz\index.php">Gérer les Quiz</a></li>
+  <li><a href="../quiz\index.php">Gérer les Quiz</a></li>
   <li><a href="index.php">Dashboard</a></li>
   <li><a href="attempts.php">Tentatives</a></li>
   <li><a href="access.php">Accès CRUD Cours</a></li>

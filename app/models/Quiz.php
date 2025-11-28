@@ -3,7 +3,6 @@
 
 require_once __DIR__ . "/../core/Model.php";
 
-
 class Quiz extends Model {
 
     protected $table = "quiz";
@@ -15,8 +14,22 @@ class Quiz extends Model {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
+    // Récupérer tous les quiz d’un chapitre
+    public function getAllByChapitre($id_chapitre) {
+        $stmt = $this->db->prepare("SELECT * FROM quiz WHERE id_chapitre=? ORDER BY id ASC");
+        $stmt->execute([$id_chapitre]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    // Récupérer un quiz par ID
+    public function getById($id) {
+        $stmt = $this->db->prepare("SELECT * FROM quiz WHERE id=?");
+        $stmt->execute([$id]);
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+
     // Ajouter un quiz
-    public function add($id_cours, $id_chapitre, $question, $rep1, $rep2, $rep3, $rep4, $correcte) {
+    public function add($id_cours, $id_chapitre, $question, $rep1, $rep2, $rep3 = null, $rep4 = null, $correcte = 1) {
         $stmt = $this->db->prepare(
             "INSERT INTO quiz (id_cours, id_chapitre, question, rep1, rep2, rep3, rep4, correcte) 
              VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
@@ -25,7 +38,7 @@ class Quiz extends Model {
     }
 
     // Modifier un quiz existant
-    public function update($id, $question, $rep1, $rep2, $rep3, $rep4, $correcte) {
+    public function update($id, $question, $rep1, $rep2, $rep3 = null, $rep4 = null, $correcte = 1) {
         $stmt = $this->db->prepare(
             "UPDATE quiz 
              SET question=?, rep1=?, rep2=?, rep3=?, rep4=?, correcte=? 

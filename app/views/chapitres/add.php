@@ -18,6 +18,7 @@
     <button type="submit" class="btn-start">Ajouter</button>
 </form>
 
+<script src="/smartrevision/public/js/script.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function(){
     const form = document.getElementById('addChapitreForm');
@@ -28,7 +29,7 @@ document.addEventListener('DOMContentLoaded', function(){
 
         if(titre === ''){
             e.preventDefault(); // bloque l'envoi
-            alert ("Erreur : le titre du chapitre est obligatoire ");
+            alert("Erreur : le titre du chapitre est obligatoire");
             document.getElementById('titre').focus();
         }
     });

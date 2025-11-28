@@ -10,18 +10,26 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
 <body>
-<nav class="top-nav">
-  <a class="logo" href="<?= URLROOT ?>">SmartStudy+</a>
+  <nav class="top-nav">
+  <a href="index.php" class="logo">SmartStudy+</a>
   <div class="nav-menu">
-    <a href="<?= URLROOT ?>" class="active">Accueil</a>
-    <a href="<?= URLROOT ?>/Matiere/index">Matières</a>
+    <a href="index.php" >Accueil</a>
+    <a href="index.php?controller=Plan&action=index" class="active">Mes Plans</a>
+    <a href="index.php?controller=Planning&action=index">Planning</a>
+    <a href="index.php?controller=Groupes&action=index">Groupes</a>
+    <a href="index.php?controller=Progress&action=index">Progrès</a>
+    <a href="admin/login.php">admin</a>
   </div>
   <div class="user-section">
     <div class="user-info">
-      <div class="name">Utilisateur</div>
+      <div class="name">mourad chebbi</div>
       <div class="role">Étudiant</div>
     </div>
-    <img src="https://via.placeholder.com/45?text=A" class="user-photo" alt="User">
+    <img src="https://via.placeholder.com/45?text=A" alt="Photo" class="user-photo">
+    <a href="index.php?controller=Auth&action=logout" class="logout-btn">
+      <i class="fas fa-sign-out-alt"></i> Se déconnecter
+    </a>
   </div>
 </nav>
+
 <main class="main-content">

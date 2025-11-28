@@ -20,7 +20,179 @@
 
     <p id="timer" style="font-weight:600;"></p>
 </div>
+<style>
+/* ----------- CARD PRINCIPALE ----------- */
+.welcome-card{
+    max-width: 850px;
+    margin: 40px auto;
+    padding: 30px;
+    border-radius: 25px;
+    background: #E8F5EB
+    box-shadow: 0 8px 25px rgba(0,0,0,0.25);
+    font-family: "Poppins", sans-serif;
+}
 
+/* ----------- TITRE DU QUIZ ----------- */
+.welcome-card h1{
+    text-align:center;
+    font-size:32px;
+    font-weight:700;
+    color:#FFEB3B;
+    margin-bottom:20px;
+}
+
+/* ----------- INPUT ÉTUDIANT ----------- */
+#student-info{
+    padding:20px;
+    border-radius:18px;
+    box-shadow:0 5px 20px rgba(0,0,0,0.18);
+}
+
+#student-info label{
+    font-weight:600;
+    font-size:18px;
+    display:block;
+    margin-bottom:10px;
+}
+
+#student_name{
+    width:100%;
+    padding:12px 15px;
+    font-size:16px;
+    border-radius:12px;
+    border:2px solid #ccc;
+    outline:none;
+    margin-bottom:12px;
+}
+
+/* ----------- BOUTON START ----------- */
+#startQuiz{
+    padding:12px 25px;
+    background:#4CAF50;
+    color:#fff;
+    font-size:17px;
+    font-weight:600;
+    border:none;
+    border-radius:14px;
+    cursor:pointer;
+    transition:.2s;
+}
+#startQuiz:hover{
+    transform:scale(1.05);
+    background:#4CAF50;
+}
+
+/* ----------- QUIZ FORM ----------- */
+#quizForm{
+    background:#e8f5e8;
+    padding:25px;
+    margin-top:20px;
+    border-radius:20px;
+    box-shadow:0 5px 20px rgba(0,0,0,0.18);
+}
+
+/* ----------- QUESTION ----------- */
+#quiz-container h3{
+    font-size:22px;
+    font-weight:700;
+    margin-bottom:10px;
+    background:#ffeb3b;
+    padding:15px;
+    border-radius:15px;
+    color:white;
+}
+
+#quiz-container p{
+    font-size:18px;
+    margin-bottom:12px;
+}
+
+/* ----------- RÉPONSES ----------- */
+#quiz-container label{
+    display:block;
+    background:#f5f5f5;
+    padding:12px 15px;
+    border-radius:12px;
+    margin-bottom:10px;
+    cursor:pointer;
+    border:2px solid transparent;
+    transition:.2s;
+}
+
+#quiz-container input[type="radio"]{
+    transform:scale(1.25);
+    margin-right:8px;
+}
+
+#quiz-container label:hover{
+    background:#eceaff;
+    border-color:#6739ff;
+}
+
+/* ----------- BOUTONS PRECEDENT / SUIVANT ----------- */
+#prevBtn,#nextBtn{
+    padding:10px 20px;
+    font-size:16px;
+    font-weight:600;
+    border:none;
+    border-radius:14px;
+    cursor:pointer;
+    margin-right:10px;
+    transition:.2s;
+}
+
+#prevBtn{
+    background:#ccc;
+    color:#333;
+}
+#prevBtn:hover{
+    background:#b4b4b4;
+}
+
+#nextBtn{
+    background:#4caf50;
+    color:white;
+}
+#nextBtn:hover{
+    background:#3d9141;
+}
+
+/* ----------- BOUTON TERMINER ----------- */
+#quizForm button[type="submit"]{
+    display:block;
+    width:100%;
+    padding:15px;
+    font-size:18px;
+    font-weight:700;
+    border:none;
+    border-radius:18px;
+    margin-top:20px;
+    background:#ffeb3b;
+    color:white;
+    cursor:pointer;
+    transition:.2s;
+}
+
+#quizForm button[type="submit"]:hover{
+    transform:scale(1.03);
+    background:#e58800;
+}
+
+/* ----------- TIMER ----------- */
+#timer{
+    margin-top:15px;
+    font-size:19px;
+    text-align:center;
+    color:#111;
+}
+
+/* ----------- RESPONSIVE ----------- */
+@media(max-width:600px){
+    .welcome-card{padding:20px;}
+    #quiz-container h3{font-size:18px;}
+    #quiz-container p{font-size:15px;}
+}
+</style>
 <script>
 let questions = <?= json_encode(array_map(function($q){
     return [
