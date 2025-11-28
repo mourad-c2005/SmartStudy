@@ -8,6 +8,15 @@ class User {
     }
 
     /**
+     * Vérifie si un email existe déjà
+     */
+    public function emailExists($email) {
+        $stmt = $this->pdo->prepare("SELECT id FROM users WHERE email = ?");
+        $stmt->execute([$email]);
+        return $stmt->fetch(PDO::FETCH_ASSOC) !== false;
+    }
+
+    /**
      * Crée un nouvel utilisateur
      */
     public function create($data) {
@@ -15,8 +24,8 @@ class User {
 
         $sql = "
             INSERT INTO users 
-            (nom, email, password, role, date_naissance, etablissement, niveau, twitter, linkedin, github, date_creation) 
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURDATE())
+            (nom, email, password, role, date_naissance, etablissement, niveau, twitter, linkedin, github, date_creation, autorisation) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURDATE(), 1)
         ";
 
         try {
@@ -51,7 +60,7 @@ class User {
      * Récupère un utilisateur par ID
      */
     public function find($id) {
-        $stmt = $this->pdo->prepare("SELECT id, nom, email, role, date_creation FROM users WHERE id = ?");
+        $stmt = $this->pdo->prepare("SELECT id, nom, email, role, date_creation, autorisation FROM users WHERE id = ?");
         $stmt->execute([$id]);
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
@@ -60,7 +69,7 @@ class User {
      * Récupère tous les utilisateurs
      */
     public function all() {
-        $stmt = $this->pdo->prepare("SELECT id, nom, email, role, date_creation FROM users ORDER BY date_creation DESC");
+        $stmt = $this->pdo->prepare("SELECT id, nom, email, role, date_creation, autorisation FROM users ORDER BY date_creation DESC");
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
@@ -85,6 +94,29 @@ class User {
     }
 
     /**
+     * Active ou désactive un utilisateur
+     */
+    public function setAutorisation($id, $autorisation) {
+        $stmt = $this->pdo->prepare("UPDATE users SET autorisation = ? WHERE id = ?");
+        try {
+            return $stmt->execute([$autorisation ? 1 : 0, $id]);
+        } catch (Exception $e) {
+            error_log("Erreur SQL setAutorisation(): " . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Vérifie si un utilisateur est autorisé à se connecter
+     */
+    public function isAuthorized($id) {
+        $stmt = $this->pdo->prepare("SELECT autorisation FROM users WHERE id = ?");
+        $stmt->execute([$id]);
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $result && $result['autorisation'] == 1;
+    }
+
+    /**
      * Supprime un utilisateur
      */
     public function delete($id) {
@@ -98,7 +130,7 @@ class User {
     }
 
     /**
-     * Connexion utilisateur
+     * Connexion utilisateur - vérifie l'autorisation
      */
     public function login($email, $password) {
         $stmt = $this->pdo->prepare("SELECT * FROM users WHERE email = ?");
@@ -106,9 +138,22 @@ class User {
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if ($user && password_verify($password, $user['password'])) {
+            // Vérifier l'autorisation
+            if ($user['autorisation'] != 1) {
+                return false; // Utilisateur non autorisé
+            }
             unset($user['password']);
             return $user;
         }
         return false;
+    }
+
+    /**
+     * Récupère les utilisateurs avec leur statut d'autorisation
+     */
+    public function getAllWithAutorisation() {
+        $stmt = $this->pdo->prepare("SELECT id, nom, email, role, date_creation, autorisation FROM users ORDER BY date_creation DESC");
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 }
