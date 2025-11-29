@@ -63,8 +63,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // Store user in session
             $_SESSION['user_id'] = $user['id'];
             $_SESSION['user'] = $user;
-            header("Location: inscrire.php?success=1");
             
+            // Redirection avec paramètre de succès
+            header("Location: inscrire.php?success=1");
             exit;
         } else {
             $alert_message = 'Erreur lors de l\'inscription';
@@ -85,67 +86,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
 
-  <style>
-    :root {
-      --green: #4CAF50; --bg: #f8fbf8; --white: #ffffff; --text: #2e7d32;
-      --border: #e0e0e0; --error: #e74c3c; --sidebar: #e8f5e9; --success: #27ae60;
-    }
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'Open Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; }
-    header { background: var(--white); padding: 1.2rem 5%; box-shadow: 0 4px 20px rgba(76, 175, 80, 0.1); text-align: center; }
-    .logo { display: flex; align-items: center; justify-content: center; gap: 0.5rem; font-family: 'Montserrat', sans-serif; font-weight: 700; font-size: 2rem; color: var(--green); }
-    .logo svg { width: 2.5rem; height: 2.5rem; fill: var(--green); }
-
-    .main-container { flex: 1; display: flex; padding: 2rem 5%; gap: 2rem; max-width: 1300px; margin: 0 auto; }
-
-    /* LEFT: Social Links */
-    .sidebar {
-      background: var(--sidebar);
-      padding: 2rem 1.5rem;
-      border-radius: 16px;
-      width: 280px;
-      min-width: 240px;
-      box-shadow: 0 8px 25px rgba(0,0,0,0.06);
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-    }
-    .sidebar h3 { font-family: 'Montserrat', sans-serif; color: var(--green); text-align: center; font-size: 1.3rem; }
-    .social-group label { font-weight: 600; font-size: 0.9rem; color: #444; margin-bottom: 0.4rem; display: block; }
-    .social-group input { width: 100%; padding: 0.8rem; border: 1px solid var(--border); border-radius: 10px; background: #fff; font-size: 0.9rem; }
-    .social-group input:focus { outline: none; border-color: var(--green); box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.15); }
-
-    .card { background: var(--white); border-radius: 18px; padding: 2.5rem; flex: 1; max-width: 520px; box-shadow: 0 12px 35px rgba(0, 0, 0, 0.08); border-top: 6px solid var(--green); }
-    .card h2 { font-family: 'Montserrat', sans-serif; color: var(--green); margin-bottom: 0.5rem; font-size: 1.8rem; text-align: center; }
-    .card p { color: #666; margin-bottom: 1.8rem; font-size: 0.95rem; text-align: center; }
-
-    input, select, button { width: 100%; padding: 0.95rem; margin: 0.7rem 0; border: 1px solid var(--border); border-radius: 12px; font-size: 1rem; transition: 0.3s; }
-    input, select { background: #fafafa; }
-    input:focus, select:focus { outline: none; border-color: var(--green); box-shadow: 0 0 0 4px rgba(76, 175, 80, 0.15); }
-    input.error, select.error { border-color: var(--error); box-shadow: 0 0 0 4px rgba(231, 76, 60, 0.15); }
-    button { background: var(--green); color: white; font-weight: 600; cursor: pointer; border: none; margin-top: 1rem; }
-    button:hover { background: #43a047; }
-
-    .error-msg { color: var(--error); font-size: 0.85rem; margin-top: 0.3rem; display: flex; align-items: center; gap: 0.4rem; display: none; }
-    .error-msg i { font-size: 1rem; }
-
-    .alert { padding: 1rem; margin: 1rem 0; border-radius: 10px; font-size: 0.9rem; }
-    .alert-error { background: #ffebee; color: #c62828; border: 1px solid #ffcdd2; }
-    .alert-success { background: #e8f5e8; color: #2e7d32; border: 1px solid #c8e6c9; }
-
-    .links { margin-top: 1.2rem; text-align: center; font-size: 0.9rem; }
-    .links a { color: var(--green); text-decoration: none; font-weight: 600; }
-    .links a:hover { text-decoration: underline; }
-
-    footer { text-align: center; padding: 1.5rem; color: #777; font-size: 0.9rem; background: #e8f5e5; }
-
-    @media (max-width: 992px) {
-      .main-container { flex-direction: column; }
-      .sidebar, .card { width: 100%; max-width: none; }
-    }
-  </style>
+   <link rel="stylesheet" type="text/css" href="css/inscrire.css">
 </head>
 <body>
+
+  <!-- Modal de succès -->
+  <div class="success-modal" id="successModal">
+    <div class="success-modal-content">
+      <i class="fas fa-check-circle" style="font-size: 3rem; color: var(--green); margin-bottom: 1rem;"></i>
+      <h3>Inscription réussie !</h3>
+      <p>Votre compte a été créé avec succès. Vous allez être redirigé vers votre profil.</p>
+      <button onclick="redirectToProfile()">Continuer</button>
+    </div>
+  </div>
 
   <header>
     <div class="logo">
@@ -229,7 +182,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           <option value="" disabled selected>Choisir un rôle</option>
           <option value="etudiant" <?php echo (isset($_POST['role']) && $_POST['role'] === 'etudiant') ? 'selected' : ''; ?>>Étudiant</option>
           <option value="professeur" <?php echo (isset($_POST['role']) && $_POST['role'] === 'professeur') ? 'selected' : ''; ?>>Professeur</option>
-        
         </select>
 
         <!-- Hidden fields for social links -->
@@ -253,7 +205,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <script>
     console.log("Validation JavaScript chargée !");
 
+    // Fonction pour rediriger vers le profil
+    function redirectToProfile() {
+      window.location.href = 'profile.php';
+    }
+
+    // Afficher le modal de succès si l'inscription a réussi
     document.addEventListener('DOMContentLoaded', () => {
+      // Vérifier le paramètre d'URL pour le succès
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('success') === '1') {
+        const successModal = document.getElementById('successModal');
+        if (successModal) {
+          successModal.style.display = 'flex';
+          
+          // Redirection automatique après 3 secondes
+          setTimeout(() => {
+            redirectToProfile();
+          }, 3000);
+        }
+      }
+
       const form = document.getElementById('inscriptionForm');
       if (!form) return console.error("Formulaire non trouvé");
 
@@ -424,4 +396,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     });
   </script>
 </body>
-</html> 
+</html>
