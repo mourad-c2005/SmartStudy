@@ -1,0 +1,28 @@
+/* public/css/style.css */
+:root {
+  --green: #4CAF50;
+  --yellow: #FFEB3B;
+  --light: #E8F5E8;
+  --white: #ffffff;
+  --dark: #2e7d32;
+}
+*{box-sizing:border-box}
+body{font-family:'Open Sans',sans-serif;background:var(--light);color:#333;margin:0;padding-bottom:60px;}
+.top-nav{background:var(--white);padding:1rem 5%;box-shadow:0 4px 15px rgba(76,175,80,0.08);position:sticky;top:0;z-index:1000;display:flex;justify-content:space-between;align-items:center;}
+.logo{font-family:'Montserrat',sans-serif;font-weight:700;font-size:1.6rem;color:var(--green);text-decoration:none;}
+.nav-menu{display:flex;gap:1rem;}
+.nav-menu a{color:#555;text-decoration:none;font-weight:600;padding:0.4rem 0.8rem;border-radius:30px;}
+.nav-menu a.active, .nav-menu a:hover{background:var(--light);color:var(--green);}
+.user-section{display:flex;align-items:center;gap:1rem;}
+.user-photo{width:45px;height:45px;border-radius:50%;object-fit:cover;border:3px solid var(--green);}
+.logout-btn{background:var(--yellow);padding:0.4rem 0.8rem;border-radius:30px;text-decoration:none;color:#333;}
+.main-content{padding:2.5rem 5%;min-height:calc(100vh - 120px);}
+.welcome-card{background:var(--white);border-radius:20px;padding:2rem;text-align:center;box-shadow:0 8px 25px rgba(0,0,0,0.06);margin-bottom:1.5rem;}
+.btn-start{background:var(--green);color:#fff;padding:0.6rem 1.2rem;border-radius:30px;text-decoration:none;font-weight:600;display:inline-block;}
+.module-card{background:var(--white);border-radius:16px;padding:1.6rem;box-shadow:0 6px 18px rgba(0,0,0,0.06);border-left:5px solid var(--green);text-align:center;height:100%;}
+.table-list{width:100%;border-collapse:collapse;margin-top:12px;}
+.table-list th, .table-list td{border:1px solid #e6e6e6;padding:8px;text-align:left;}
+.form{max-width:800px;background:var(--white);padding:16px;border-radius:12px;box-shadow:0 6px 12px rgba(0,0,0,0.03);}
+.form input[type="text"], .form textarea{width:100%;padding:8px;margin:6px 0 12px;border:1px solid #ddd;border-radius:6px;}
+.ans-btn{padding:8px 12px;border-radius:8px;border:1px solid #ddd;background:#fff;cursor:pointer;margin-top:6px;}
+@media (max-width:992px){ .top-nav{flex-direction:column;gap:0.7rem} .main-content{padding:1.2rem;}}
