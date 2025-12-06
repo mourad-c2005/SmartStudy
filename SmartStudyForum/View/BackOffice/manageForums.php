@@ -37,17 +37,29 @@ if (isset($_GET['action']) && isset($_GET['id'])) {
 
     <!-- Navbar -->
     <nav class="navbar navbar-expand-lg navbar-light mb-4">
-        <div class="container-fluid">
-            <a class="navbar-brand fw-bold" style="color:var(--green)" href="../FrontOffice/forums.php">
-                <i class="fas fa-comments"></i> SmartStudy+ Admin
+    <div class="container-fluid">
+        <a class="navbar-brand fw-bold" style="color:var(--green)" href="../FrontOffice/forums.php">
+            <i class="fas fa-comments"></i> SmartStudy+ Admin
+        </a>
+        <div class="ms-auto d-flex gap-2">
+            <?php
+            $db = ConfigForum::getConnexion();
+            $sql = "SELECT COUNT(*) as count FROM reports WHERE status = 'pending'";
+            $result = $db->query($sql)->fetch();
+            $pendingCount = $result['count'];
+            ?>
+            <a href="moderationReports.php" class="btn btn-warning">
+                <i class="fas fa-flag"></i> Signalements
+                <?php if ($pendingCount > 0): ?>
+                <span class="badge bg-danger"><?php echo $pendingCount; ?></span>
+                <?php endif; ?>
             </a>
-            <div class="ms-auto">
-                <a href="../FrontOffice/forums.php" class="btn btn-outline-success">
-                    <i class="fas fa-home"></i> Voir le Forum
-                </a>
-            </div>
+            <a href="../FrontOffice/forums.php" class="btn btn-outline-success">
+                <i class="fas fa-home"></i> Forum
+            </a>
         </div>
-    </nav>
+    </div>
+</nav>
 
     <div class="container">
         <div class="card">

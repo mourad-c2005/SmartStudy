@@ -35,13 +35,14 @@ class ReplyController {
 
     // Ajouter une réponse
     public function addReply(Reply $reply) {
-        $sql = "INSERT INTO replies (forum_id, author, content, is_solution, likes) 
-                VALUES (:forum_id, :author, :content, :is_solution, :likes)";
+        $sql = "INSERT INTO replies (forum_id, parent_id, author, content, is_solution, likes) 
+                VALUES (:forum_id, :parent_id, :author, :content, :is_solution, :likes)";
         $db = ConfigForum::getConnexion();
         try {
             $query = $db->prepare($sql);
             $query->execute([
                 'forum_id' => $reply->getForumId(),
+                'parent_id' => $reply->getParentId(),
                 'author' => $reply->getAuthor(),
                 'content' => $reply->getContent(),
                 'is_solution' => $reply->getIsSolution() ? 1 : 0,
@@ -162,5 +163,33 @@ class ReplyController {
             return 0;
         }
     }
+
+    // ← NOUVELLE MÉTHODE : Récupérer les réponses d'une réponse
+ public function getRepliesByParentId($parent_id) {
+    $sql = "SELECT * FROM replies WHERE parent_id = :parent_id ORDER BY created_at ASC";
+    $db = ConfigForum::getConnexion();
+    try {
+        $stmt = $db->prepare($sql);
+        $stmt->bindValue(':parent_id', $parent_id);
+        $stmt->execute();
+        return $stmt->fetchAll();
+    } catch (Exception $e) {
+        return [];
+    }
+ }
+
+// ← NOUVELLE MÉTHODE : Lister seulement les réponses principales (sans parent)
+ public function listMainRepliesByForum($forum_id) {
+    $sql = "SELECT * FROM replies WHERE forum_id = :forum_id AND parent_id IS NULL ORDER BY is_solution DESC, created_at ASC";
+    $db = ConfigForum::getConnexion();
+    try {
+        $stmt = $db->prepare($sql);
+        $stmt->bindValue(':forum_id', $forum_id);
+        $stmt->execute();
+        return $stmt;
+    } catch (Exception $e) {
+        die('Error: ' . $e->getMessage());
+    }
+ }
 }
 ?>

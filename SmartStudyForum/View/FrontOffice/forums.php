@@ -73,28 +73,36 @@ if (!empty($search)) {
   <!-- Main -->
   <main class="container-main">
     <h1 style="font-family:Montserrat;color:var(--green);text-align:center;margin-bottom:1.5rem">Forum & Discussions</h1>
-
+    
     <div class="forum-actions">
-      <form method="GET" class="d-flex gap-2 flex-grow-1">
-        <input name="search" class="form-control search-box" type="search" placeholder="Chercher un sujet, mot-clé..." value="<?php echo htmlspecialchars($search); ?>" />
-        <select name="category" class="form-select" style="width:220px">
-          <option value="">Toutes catégories</option>
-          <option value="Planning" <?php echo $category === 'Planning' ? 'selected' : ''; ?>>Planning</option>
-          <option value="Méthodes" <?php echo $category === 'Méthodes' ? 'selected' : ''; ?>>Méthodes</option>
-          <option value="Technique" <?php echo $category === 'Technique' ? 'selected' : ''; ?>>Technique</option>
-          <option value="Général" <?php echo $category === 'Général' ? 'selected' : ''; ?>>Général</option>
-        </select>
-        <button type="submit" class="btn btn-success">
-          <i class="fas fa-search"></i>
-        </button>
-        <?php if (!empty($search) || !empty($category)): ?>
-          <a href="forums.php" class="btn btn-secondary">Réinitialiser</a>
-        <?php endif; ?>
-      </form>
-      <a href="../BackOffice/addForum.php" class="btn" style="background:var(--green);color:#fff;border-radius:30px">
-        <i class="fas fa-plus"></i> Nouveau sujet
+  <form method="GET" action="forums.php" class="d-flex gap-2 flex-grow-1">
+    <input name="search" class="form-control search-box" type="search" 
+           placeholder="Chercher un sujet, mot-clé..." 
+           value="<?php echo htmlspecialchars($search); ?>" />
+    
+    <select name="category" class="form-select" style="width:220px" onchange="this.form.submit()">
+      <option value="">Toutes catégories</option>
+      <option value="Planning" <?php echo $category === 'Planning' ? 'selected' : ''; ?>>Planning</option>
+      <option value="Méthodes" <?php echo $category === 'Méthodes' ? 'selected' : ''; ?>>Méthodes</option>
+      <option value="Technique" <?php echo $category === 'Technique' ? 'selected' : ''; ?>>Technique</option>
+      <option value="Général" <?php echo $category === 'Général' ? 'selected' : ''; ?>>Général</option>
+    </select>
+    
+    <button type="submit" class="btn btn-success">
+      <i class="fas fa-search"></i>
+    </button>
+    
+    <?php if (!empty($search) || !empty($category)): ?>
+      <a href="forums.php" class="btn btn-secondary">
+        <i class="fas fa-times"></i> Réinitialiser
       </a>
-    </div>
+    <?php endif; ?>
+  </form>
+  
+  <a href="../BackOffice/addForum.php" class="btn" style="background:var(--green);color:#fff;border-radius:30px">
+    <i class="fas fa-plus"></i> Nouveau sujet
+  </a>
+</div>
 
     <!-- Topics List -->
     <div id="topicsList">

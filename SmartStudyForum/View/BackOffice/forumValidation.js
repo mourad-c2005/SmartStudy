@@ -1,16 +1,11 @@
-// ========================================
-// VALIDATION DU FORMULAIRE DE FORUM
-// ========================================
+
 
 document.addEventListener("DOMContentLoaded", function() {
   const form = document.getElementById("addForumForm");
   
   if (form) {
-    // ========================================
-    // PARTIE 1: Validation en temps réel
-    // ========================================
 
-    // Vérification du titre (keyup)
+
     const titleField = document.getElementById("title");
     if (titleField) {
       titleField.addEventListener("keyup", function() {
@@ -20,22 +15,22 @@ document.addEventListener("DOMContentLoaded", function() {
         if (msg) {
           if (value.length === 0) {
             msg.style.color = "red";
-            msg.innerText = "❌ Le titre est obligatoire";
+            msg.innerText = " Le titre est obligatoire";
           } else if (value.length < 10) {
             msg.style.color = "orange";
-            msg.innerText = "⚠️ Le titre devrait contenir au moins 10 caractères";
+            msg.innerText = " Le titre devrait contenir au moins 10 caractères";
           } else if (value.length > 200) {
             msg.style.color = "red";
-            msg.innerText = "❌ Le titre ne peut pas dépasser 200 caractères";
+            msg.innerText = " Le titre ne peut pas dépasser 200 caractères";
           } else {
             msg.style.color = "green";
-            msg.innerText = "✅ Titre valide";
+            msg.innerText = " Titre valide";
           }
         }
       });
     }
 
-    // Vérification de l'auteur (blur)
+ 
     const authorField = document.getElementById("author");
     if (authorField) {
       authorField.addEventListener("blur", function() {
@@ -58,7 +53,7 @@ document.addEventListener("DOMContentLoaded", function() {
       });
     }
 
-    // Vérification du contenu (keyup)
+
     const contentField = document.getElementById("content");
     if (contentField) {
       contentField.addEventListener("keyup", function() {
@@ -84,7 +79,7 @@ document.addEventListener("DOMContentLoaded", function() {
       });
     }
 
-    // Vérification de la catégorie (change)
+
     const categoryField = document.getElementById("category");
     if (categoryField) {
       categoryField.addEventListener("change", function() {
@@ -103,15 +98,13 @@ document.addEventListener("DOMContentLoaded", function() {
       });
     }
 
-    // ========================================
-    // PARTIE 2: Validation à la soumission
-    // ========================================
+
 
     form.addEventListener("submit", function(event) {
       let isValid = true;
       let errors = [];
 
-      // Validation du titre
+   
       const title = document.getElementById("title").value.trim();
       if (title.length === 0) {
         errors.push("Le titre est obligatoire");
@@ -124,7 +117,7 @@ document.addEventListener("DOMContentLoaded", function() {
         isValid = false;
       }
 
-      // Validation de la catégorie
+   
       const category = document.getElementById("category").value;
       if (category === "") {
         errors.push("Veuillez sélectionner une catégorie");
@@ -185,9 +178,6 @@ document.addEventListener("DOMContentLoaded", function() {
   }
 });
 
-// ========================================
-// FONCTIONS UTILITAIRES
-// ========================================
 
 // Fonction pour nettoyer les espaces multiples
 function cleanWhitespace(str) {

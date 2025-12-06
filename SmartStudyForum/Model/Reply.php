@@ -2,6 +2,7 @@
 class Reply {
     private ?int $id;
     private ?int $forum_id;
+    private ?int $parent_id;
     private ?string $author;
     private ?string $content;
     private ?string $created_at;
@@ -13,6 +14,7 @@ class Reply {
     public function __construct(
         ?int $id = null,
         ?int $forum_id = null,
+        ?int $parent_id = null,
         ?string $author = null,
         ?string $content = null,
         ?string $created_at = null,
@@ -22,6 +24,7 @@ class Reply {
     ) {
         $this->id = $id;
         $this->forum_id = $forum_id;
+        $this->parent_id = $parent_id;
         $this->author = $author;
         $this->content = $content;
         $this->created_at = $created_at;
@@ -37,6 +40,10 @@ class Reply {
 
     public function getForumId(): ?int {
         return $this->forum_id;
+    }
+
+    public function getParentId(): ?int {
+        return $this->parent_id;
     }
 
     public function getAuthor(): ?string {
@@ -70,6 +77,10 @@ class Reply {
 
     public function setForumId(?int $forum_id): void {
         $this->forum_id = $forum_id;
+    }
+
+    public function setParentId(?int $parent_id): void {
+        $this->parent_id = $parent_id;
     }
 
     public function setAuthor(?string $author): void {
