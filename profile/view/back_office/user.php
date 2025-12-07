@@ -7,6 +7,20 @@ require_once __DIR__ . '/../../model/User.php';
 $userModel = new User($pdo);
 $users = $userModel->getAllWithAutorisation(); // Utiliser la nouvelle méthode
 
+// Gestion de la recherche
+$searchTerm = '';
+if (isset($_GET['search']) && !empty(trim($_GET['search']))) {
+    $searchTerm = trim($_GET['search']);
+    // Recherche les utilisateurs
+    $users = $userModel->search($searchTerm);
+}
+
+// Fonction pour surligner les termes de recherche
+function highlightText($text, $term) {
+    if (empty($term)) return htmlspecialchars($text);
+    return preg_replace("/($term)/i", '<span class="highlight">$1</span>', htmlspecialchars($text));
+}
+
 // Gestion des messages de succès/erreur
 $message = '';
 if (isset($_GET['success'])) {
@@ -33,55 +47,94 @@ if (isset($_GET['error'])) {
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SmartStudy+ | Gestion des Utilisateurs</title>
-  <link rel="stylesheet" type="text/css" href="style.css">
+  <link rel="stylesheet" type="text/css" href="css/style.css">
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
   <style>
-    .alert { padding: 10px; margin: 10px 0; border-radius: 4px; }
-    .alert.success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
-    .alert.error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
-    .error-message { color: #dc3545; font-size: 12px; margin-top: 5px; display: none; }
-    .form-control.error { border-color: #dc3545; }
-    .autorisation-btn { 
-        padding: 6px 12px; 
-        border: none; 
-        border-radius: 4px; 
-        cursor: pointer; 
-        font-size: 12px; 
-        font-weight: bold;
-        transition: all 0.3s;
+    /* Styles supplémentaires pour la recherche */
+    .search-container {
+        margin: 20px 0;
+        display: flex;
+        gap: 10px;
+        align-items: center;
     }
-    .autorisation-btn.yes { 
-        background: #4CAF50; 
-        color: white; 
+    
+    .search-box {
+        flex: 1;
+        position: relative;
     }
-    .autorisation-btn.no { 
-        background: #f44336; 
-        color: white; 
+    
+    .search-input {
+        width: 100%;
+        padding: 10px 40px 10px 15px;
+        border: 2px solid #ddd;
+        border-radius: 8px;
+        font-size: 14px;
+        transition: border-color 0.3s;
     }
-    .autorisation-btn:hover {
-        opacity: 0.8;
-        transform: scale(1.05);
+    
+    .search-input:focus {
+        outline: none;
+        border-color: #4CAF50;
     }
-    .autorisation-btn:disabled {
-        opacity: 0.6;
-        cursor: not-allowed;
-        transform: none;
+    
+    .search-icon {
+        position: absolute;
+        right: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #666;
     }
-    .autorisation-status {
-        display: inline-block;
-        padding: 4px 8px;
-        border-radius: 12px;
-        font-size: 11px;
-        font-weight: bold;
+    
+    .btn-search {
+        padding: 10px 20px;
+        background: #4CAF50;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 600;
+        transition: background 0.3s;
     }
-    .status-active {
-        background: #e8f5e8;
-        color: #2e7d32;
+    
+    .btn-search:hover {
+        background: #45a049;
     }
-    .status-blocked {
-        background: #ffebee;
-        color: #c62828;
+    
+    .btn-clear-search {
+        padding: 10px 20px;
+        background: #f44336;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 600;
+        transition: background 0.3s;
+    }
+    
+    .btn-clear-search:hover {
+        background: #d32f2f;
+    }
+    
+    .search-results-info {
+        background: #e8f5e9;
+        padding: 10px;
+        border-radius: 5px;
+        margin-bottom: 15px;
+        border-left: 4px solid #4CAF50;
+    }
+    
+    .no-results {
+        text-align: center;
+        padding: 30px;
+        color: #666;
+        font-style: italic;
+    }
+    
+    .highlight {
+        background-color: #fff9c4;
+        padding: 2px 4px;
+        border-radius: 3px;
     }
   </style>
 </head>
@@ -114,25 +167,61 @@ if (isset($_GET['error'])) {
       </div>
       <div class="stat-card">
         <h5>Étudiants</h5>
-        <h3 id="total-etudiants"><?php echo count(array_filter($users, fn($u) => $u['role'] === 'etudiant')); ?></h3>
+        <h3 id="total-etudiants"><?php echo count(array_filter($users, function($u) { 
+            return ($u['role'] ?? $u['user_role'] ?? '') === 'etudiant'; 
+        })); ?></h3>
         <p>Inscrits</p>
       </div>
       <div class="stat-card">
         <h5>Professeurs</h5>
-        <h3 id="total-professeurs"><?php echo count(array_filter($users, fn($u) => $u['role'] === 'professeur')); ?></h3>
+        <h3 id="total-professeurs"><?php echo count(array_filter($users, function($u) { 
+            return ($u['role'] ?? $u['user_role'] ?? '') === 'professeur'; 
+        })); ?></h3>
         <p>Inscrits</p>
       </div>
       <div class="stat-card">
         <h5>Actifs</h5>
-        <h3 id="total-actifs"><?php echo count(array_filter($users, fn($u) => $u['autorisation'] == 1)); ?></h3>
+        <h3 id="total-actifs"><?php echo count(array_filter($users, function($u) { 
+            return ($u['autorisation'] ?? 0) == 1; 
+        })); ?></h3>
         <p>Comptes autorisés</p>
       </div>
     </div>
     <div class="clear"></div>
 
+    <!-- Barre de recherche -->
+    <div class="search-container">
+      <form method="GET" action="" class="search-box">
+        <input type="text" 
+               name="search" 
+               class="search-input" 
+               placeholder="Rechercher par nom ou email..."
+               value="<?php echo htmlspecialchars($searchTerm); ?>"
+               autocomplete="off">
+        <i class="fas fa-search search-icon"></i>
+      </form>
+      <button type="submit" form="search-form" class="btn-search">
+        <i class="fas fa-search"></i> Rechercher
+      </button>
+      <?php if (!empty($searchTerm)): ?>
+        <a href="user.php" class="btn-clear-search">
+          <i class="fas fa-times"></i> Effacer
+        </a>
+      <?php endif; ?>
+    </div>
+
+    <?php if (!empty($searchTerm)): ?>
+      <div class="search-results-info">
+        <strong>Résultats de recherche pour : "<?php echo htmlspecialchars($searchTerm); ?>"</strong>
+        - <?php echo count($users); ?> utilisateur(s) trouvé(s)
+      </div>
+    <?php endif; ?>
+
     <div class="card">
       <div style="overflow: hidden; margin-bottom: 16px;">
-        <h5 style="float: left; margin: 0;">Liste des Utilisateurs</h5>
+        <h5 style="float: left; margin: 0;">
+          <?php echo !empty($searchTerm) ? 'Résultats de la recherche' : 'Liste des Utilisateurs'; ?>
+        </h5>
         <div style="float: right;">
           <button type="button" class="btn-add" onclick="openAddUserModal()">
             <i class="fas fa-plus"></i> Add User
@@ -160,40 +249,55 @@ if (isset($_GET['error'])) {
           </thead>
           <tbody>
             <?php if (empty($users)): ?>
-              <tr><td colspan="8">Aucun utilisateur trouvé</td></tr>
+              <tr>
+                <td colspan="8" class="no-results">
+                  <?php if (!empty($searchTerm)): ?>
+                    Aucun utilisateur trouvé pour "<?php echo htmlspecialchars($searchTerm); ?>"
+                  <?php else: ?>
+                    Aucun utilisateur trouvé
+                  <?php endif; ?>
+                </td>
+              </tr>
             <?php else: ?>
-              <?php foreach ($users as $user): ?>
+              <?php foreach ($users as $user): 
+                $nom = $user['nom'] ?? $user['name'] ?? '';
+                $email = $user['email'] ?? '';
+                $role = $user['role'] ?? $user['user_role'] ?? '';
+                $date = $user['date_creation'] ?? $user['date_inscription'] ?? $user['created_at'] ?? 'N/A';
+                $autorisation = $user['autorisation'] ?? 0;
+                $userId = $user['id'] ?? 0;
+              ?>
                 <tr>
-                  <td><?php echo htmlspecialchars($user['id'] ?? ''); ?></td>
-                  <td><?php echo htmlspecialchars($user['nom'] ?? $user['name'] ?? ''); ?></td>
-                  <td><?php echo htmlspecialchars($user['email'] ?? ''); ?></td>
-                  <td><?php echo htmlspecialchars($user['role'] ?? $user['user_role'] ?? ''); ?></td>
-                  <td><?php echo htmlspecialchars($user['date_creation'] ?? $user['date_inscription'] ?? $user['created_at'] ?? 'N/A'); ?></td>
+                  <td><?php echo $userId; ?></td>
+                  <td><?php echo !empty($searchTerm) ? highlightText($nom, $searchTerm) : htmlspecialchars($nom); ?></td>
+                  <td><?php echo !empty($searchTerm) ? highlightText($email, $searchTerm) : htmlspecialchars($email); ?></td>
+                  <td><?php echo htmlspecialchars($role); ?></td>
+                  <td><?php echo htmlspecialchars($date); ?></td>
                   <td>
                     <div class="autorisation-buttons">
-                      <button class="autorisation-btn <?php echo $user['autorisation'] == 1 ? 'yes' : ''; ?>" 
-                              onclick="toggleAutorisation(<?php echo $user['id']; ?>, 1)" 
-                              <?php echo $user['autorisation'] == 1 ? 'disabled' : ''; ?>>
+                      <button class="autorisation-btn <?php echo $autorisation == 1 ? 'yes' : ''; ?>" 
+                              onclick="toggleAutorisation(<?php echo $userId; ?>, 1)" 
+                              <?php echo $autorisation == 1 ? 'disabled' : ''; ?>>
                         Oui
                       </button>
-                      <button class="autorisation-btn <?php echo $user['autorisation'] == 0 ? 'no' : ''; ?>" 
-                              onclick="toggleAutorisation(<?php echo $user['id']; ?>, 0)" 
-                              <?php echo $user['autorisation'] == 0 ? 'disabled' : ''; ?>>
+                      <button class="autorisation-btn <?php echo $autorisation == 0 ? 'no' : ''; ?>" 
+                              onclick="toggleAutorisation(<?php echo $userId; ?>, 0)" 
+                              <?php echo $autorisation == 0 ? 'disabled' : ''; ?>>
                         Non
                       </button>
                     </div>
                   </td>
                   <td>
-                    <span class="autorisation-status <?php echo $user['autorisation'] == 1 ? 'status-active' : 'status-blocked'; ?>">
-                      <?php echo $user['autorisation'] == 1 ? 'Actif' : 'Bloqué'; ?>
+                    <span class="autorisation-status <?php echo $autorisation == 1 ? 'status-active' : 'status-blocked'; ?>">
+                      <?php echo $autorisation == 1 ? 'Actif' : 'Bloqué'; ?>
                     </span>
                   </td>
                   <td>
-                    <button class='btn-modifier' onclick='editUser(<?php echo $user['id']; ?>)'>
+                    <button class='btn-modifier' onclick='editUser(<?php echo $userId; ?>)'>
                       <i class='fas fa-edit'></i> Modifier 
                     </button>
                     <form action="../../controller/delete_page.php" method="GET" style="display: inline;">
-                      <input type="hidden" name="id" value="<?php echo $user['id']; ?>">
+                      <input type="hidden" name="id" value="<?php echo $userId; ?>">
                       <button type="submit" class='btn-supprimer' onclick="return confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ?')">
                         <i class='fas fa-trash'></i> Supprimer
                       </button>
@@ -298,7 +402,6 @@ if (isset($_GET['error'])) {
     // Fonction pour basculer l'autorisation
     function toggleAutorisation(userId, autorisation) {
         if (confirm('Êtes-vous sûr de vouloir ' + (autorisation == 1 ? 'activer' : 'désactiver') + ' cet utilisateur ?')) {
-            // Envoyer la requête AJAX
             const formData = new FormData();
             formData.append('user_id', userId);
             formData.append('autorisation', autorisation);
@@ -311,7 +414,6 @@ if (isset($_GET['error'])) {
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    // CORRECTION : Rediriger vers user.php
                     window.location.href = 'user.php?success=autorisation_updated';
                 } else {
                     alert('Erreur: ' + data.message);
@@ -344,20 +446,53 @@ if (isset($_GET['error'])) {
     }
 
     function validateAddUserForm() {
-        // Votre logique de validation existante
         document.getElementById('add-user-form').submit();
     }
 
     function validateEditUserForm() {
-        // Votre logique de validation existante
         document.getElementById('edit-user-form').submit();
     }
 
     function editUser(userId) {
-        // Votre logique d'édition existante
         document.getElementById('edit-user-id').value = userId;
         document.getElementById('editModal').style.display = 'block';
     }
+
+    // Recherche en temps réel
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchInput = document.querySelector('.search-input');
+        const searchForm = document.querySelector('form.search-box');
+        
+        if (searchInput && searchForm) {
+            // Soumettre le formulaire automatiquement après un délai
+            let searchTimeout;
+            searchInput.addEventListener('input', function() {
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(() => {
+                    if (this.value.trim().length >= 2 || this.value.trim().length === 0) {
+                        searchForm.submit();
+                    }
+                }, 500);
+            });
+            
+            // Soumettre avec Enter
+            searchInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    searchForm.submit();
+                }
+            });
+        }
+        
+        // Corriger le bouton de recherche pour qu'il soumette le formulaire
+        const searchBtn = document.querySelector('.btn-search');
+        if (searchBtn && searchForm) {
+            searchBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                searchForm.submit();
+            });
+        }
+    });
   </script>
   
   <script src="../js/validation.js"></script>
