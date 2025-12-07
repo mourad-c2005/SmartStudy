@@ -538,5 +538,55 @@ class User {
             return false;
         }
     }
-}
+
+public function search(string $term, int $excludeUserId = 0): array
+{
+    try {
+        // Vérifier si la colonne username existe
+        $checkColumn = $this->pdo->prepare("SHOW COLUMNS FROM users LIKE 'username'");
+        $checkColumn->execute();
+        $hasUsername = $checkColumn->rowCount() > 0;
+        
+        // Construire la requête SQL
+        $sql = "SELECT id, nom, email, role, date_creation, autorisation 
+                FROM users 
+                WHERE (nom LIKE :term OR email LIKE :term";
+        
+        // Ajouter username si la colonne existe
+        if ($hasUsername) {
+            $sql .= " OR username LIKE :term";
+        }
+        
+        $sql .= ")";
+        
+        // Ajouter la clause d'exclusion si nécessaire
+        if ($excludeUserId > 0) {
+            $sql .= " AND id <> :exclude";
+        }
+        
+        // Ajouter le tri et la limite
+        $sql .= " ORDER BY nom ASC LIMIT 50";
+        
+        // Préparer la requête
+        $stmt = $this->pdo->prepare($sql);
+        
+        // Lier le paramètre de recherche
+        $stmt->bindValue(':term', '%' . $term . '%', PDO::PARAM_STR);
+        
+        // Lier le paramètre d'exclusion si nécessaire
+        if ($excludeUserId > 0) {
+            $stmt->bindValue(':exclude', $excludeUserId, PDO::PARAM_INT);
+        }
+        
+        // Exécuter la requête
+        $stmt->execute();
+        
+        // Récupérer et retourner les résultats
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
+    } catch (PDOException $e) {
+        error_log("PDO Error in search: " . $e->getMessage());
+        return [];
+    }
+}}
 ?>
