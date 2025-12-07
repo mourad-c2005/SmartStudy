@@ -130,6 +130,13 @@ if (isset($_GET['action']) && isset($_GET['reply_id'])) {
 
   <!-- Nav -->
   <nav class="top-nav">
+  <div class="nav-menu">
+    <a href="forums.php" class="active">Forum</a>
+    <a href="chatbot.php">
+        <i class="fas fa-robot"></i> Assistant Bien-être
+    </a>
+    <a href="../BackOffice/index.html" class="nav-link">Dashboard</a>
+</div>
     <a class="logo" href="forums.php">SmartStudy+</a>
     <div class="nav-menu">
       <a href="forums.php" class="active">← Retour au Forum</a>

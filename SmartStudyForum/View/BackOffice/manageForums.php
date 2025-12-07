@@ -36,6 +36,9 @@ if (isset($_GET['action']) && isset($_GET['id'])) {
 <body>
 
     <!-- Navbar -->
+    <a href="statistics.php" class="btn btn-info">
+    <i class="fas fa-chart-bar"></i> Statistiques
+</a>
     <nav class="navbar navbar-expand-lg navbar-light mb-4">
     <div class="container-fluid">
         <a class="navbar-brand fw-bold" style="color:var(--green)" href="../FrontOffice/forums.php">
