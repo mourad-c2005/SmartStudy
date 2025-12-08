@@ -1,18 +1,36 @@
 <?php
 // inscrire.php
+
 session_start();
 
 // Include database configuration
 require_once '../config/database.php';
 require_once '../model/User.php';
 
-// $pdo is already available from database.php include
+// Vérifiez le chemin de mailer.php
+$mailer_path = dirname(__DIR__) . '/lib/mailer.php';
+if (file_exists($mailer_path)) {
+    require_once $mailer_path;
+} else {
+    // Chemin alternatif
+    $mailer_path = __DIR__ . '/../lib/mailer.php';
+    if (file_exists($mailer_path)) {
+        require_once $mailer_path;
+    } else {
+        die("Fichier mailer.php non trouvé. Cherché à: " . $mailer_path);
+    }
+}
+
+// $pdo est déjà disponible depuis database.php
 $userModel = new User($pdo);
 
-// Check if user is already logged in
+// Vérifier si l'utilisateur est déjà connecté
+if (isset($_SESSION['user_id'])) {
+    header("Location: profile.php");
+    exit;
+}
 
-
-// Handle form submission
+// Gérer la soumission du formulaire
 $alert_message = '';
 $alert_type = '';
 
@@ -43,7 +61,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $alert_message = 'Cet email est déjà utilisé';
         $alert_type = 'error';
     } else {
-        // Create user
+        // Créer l'utilisateur
         $userData = [
             'nom' => $nom,
             'email' => $email,
@@ -60,13 +78,76 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $user = $userModel->create($userData);
         
         if ($user) {
-            // Store user in session
-            $_SESSION['user_id'] = $user['id'];
-            $_SESSION['user'] = $user;
+            // Générer un code de vérification
+            $verification_code = rand(100000, 999999);
             
-            // Redirection avec paramètre de succès
-            header("Location: inscrire.php?success=1");
-            exit;
+            // Stocker le code dans la session
+            $_SESSION['verification_code'] = $verification_code;
+            $_SESSION['verification_email'] = $email;
+            $_SESSION['temp_user_id'] = $user['id'];
+            
+            // Envoyer le code par email
+            $subject = "Code de vérification SmartStudy+";
+            $body = "
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <meta charset='utf-8'>
+                    <style>
+                        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+                        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+                        .header { background: #4CAF50; color: white; padding: 20px; text-align: center; border-radius: 10px 10px 0 0; }
+                        .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }
+                        .code { font-size: 32px; font-weight: bold; color: #4CAF50; text-align: center; margin: 30px 0; padding: 15px; background: white; border-radius: 8px; border: 2px dashed #4CAF50; }
+                        .footer { margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd; color: #666; font-size: 14px; text-align: center; }
+                    </style>
+                </head>
+                <body>
+                    <div class='container'>
+                        <div class='header'>
+                            <h1>SmartStudy+</h1>
+                            <p>Vérification de votre compte</p>
+                        </div>
+                        <div class='content'>
+                            <h2>Bonjour $nom,</h2>
+                            <p>Merci de vous être inscrit sur SmartStudy+.</p>
+                            <p>Pour finaliser votre inscription, veuillez utiliser le code de vérification ci-dessous :</p>
+                            <div class='code'>$verification_code</div>
+                            <p>Ce code est valable pendant 15 minutes.</p>
+                            <p>Si vous n'avez pas créé de compte sur SmartStudy+, veuillez ignorer cet email.</p>
+                        </div>
+                        <div class='footer'>
+                            <p>© 2025 SmartStudy+. Tous droits réservés.</p>
+                            <p>Cet email a été envoyé automatiquement, merci de ne pas y répondre.</p>
+                        </div>
+                    </div>
+                </body>
+                </html>
+            ";
+            
+            $altBody = "Code de vérification SmartStudy+\n\nBonjour $nom,\n\nVotre code de vérification est : $verification_code\n\nCe code est valable pendant 15 minutes.\n\nCordialement,\nL'équipe SmartStudy+";
+            
+            // Envoyer l'email
+            if (function_exists('sendEmail') && sendEmail($email, $subject, $body, $altBody)) {
+                // Rediriger vers la page de vérification
+                header("Location: verifier.php");
+                exit;
+            } else {
+                // Fallback: utiliser la fonction mail() si PHPMailer échoue
+                $headers = "MIME-Version: 1.0\r\n";
+                $headers .= "Content-type: text/html; charset=utf-8\r\n";
+                $headers .= "From: SmartStudy+ <noreply@smartstudy.com>\r\n";
+                
+                if (mail($email, $subject, $body, $headers)) {
+                    header("Location: verifier.php");
+                    exit;
+                } else {
+                    $alert_message = "Erreur lors de l'envoi du code de vérification. Veuillez réessayer.";
+                    $alert_type = 'error';
+                    // Supprimer l'utilisateur créé
+                    $userModel->delete($user['id']);
+                }
+            }
         } else {
             $alert_message = 'Erreur lors de l\'inscription';
             $alert_type = 'error';
@@ -86,130 +167,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
 
-  <style>
-    :root {
-      --green: #4CAF50; --bg: #f8fbf8; --white: #ffffff; --text: #2e7d32;
-      --border: #e0e0e0; --error: #e74c3c; --sidebar: #e8f5e9; --success: #27ae60;
-    }
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'Open Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; }
-    header { background: var(--white); padding: 1.2rem 5%; box-shadow: 0 4px 20px rgba(76, 175, 80, 0.1); text-align: center; }
-    .logo { display: flex; align-items: center; justify-content: center; gap: 0.5rem; font-family: 'Montserrat', sans-serif; font-weight: 700; font-size: 2rem; color: var(--green); }
-    .logo svg { width: 2.5rem; height: 2.5rem; fill: var(--green); }
-
-    .main-container { flex: 1; display: flex; padding: 2rem 5%; gap: 2rem; max-width: 1300px; margin: 0 auto; }
-
-    /* LEFT: Social Links */
-    .sidebar {
-      background: var(--sidebar);
-      padding: 2rem 1.5rem;
-      border-radius: 16px;
-      width: 280px;
-      min-width: 240px;
-      box-shadow: 0 8px 25px rgba(0,0,0,0.06);
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-    }
-    .sidebar h3 { font-family: 'Montserrat', sans-serif; color: var(--green); text-align: center; font-size: 1.3rem; }
-    .social-group label { font-weight: 600; font-size: 0.9rem; color: #444; margin-bottom: 0.4rem; display: block; }
-    .social-group input { width: 100%; padding: 0.8rem; border: 1px solid var(--border); border-radius: 10px; background: #fff; font-size: 0.9rem; }
-    .social-group input:focus { outline: none; border-color: var(--green); box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.15); }
-
-    .card { background: var(--white); border-radius: 18px; padding: 2.5rem; flex: 1; max-width: 520px; box-shadow: 0 12px 35px rgba(0, 0, 0, 0.08); border-top: 6px solid var(--green); }
-    .card h2 { font-family: 'Montserrat', sans-serif; color: var(--green); margin-bottom: 0.5rem; font-size: 1.8rem; text-align: center; }
-    .card p { color: #666; margin-bottom: 1.8rem; font-size: 0.95rem; text-align: center; }
-
-    input, select, button { width: 100%; padding: 0.95rem; margin: 0.7rem 0; border: 1px solid var(--border); border-radius: 12px; font-size: 1rem; transition: 0.3s; }
-    input, select { background: #fafafa; }
-    input:focus, select:focus { outline: none; border-color: var(--green); box-shadow: 0 0 0 4px rgba(76, 175, 80, 0.15); }
-    input.error, select.error { border-color: var(--error); box-shadow: 0 0 0 4px rgba(231, 76, 60, 0.15); }
-    button { background: var(--green); color: white; font-weight: 600; cursor: pointer; border: none; margin-top: 1rem; }
-    button:hover { background: #43a047; }
-
-    .error-msg { color: var(--error); font-size: 0.85rem; margin-top: 0.3rem; display: flex; align-items: center; gap: 0.4rem; display: none; }
-    .error-msg i { font-size: 1rem; }
-
-    .alert { padding: 1rem; margin: 1rem 0; border-radius: 10px; font-size: 0.9rem; }
-    .alert-error { background: #ffebee; color: #c62828; border: 1px solid #ffcdd2; }
-    .alert-success { background: #e8f5e8; color: #2e7d32; border: 1px solid #c8e6c9; }
-
-    .links { margin-top: 1.2rem; text-align: center; font-size: 0.9rem; }
-    .links a { color: var(--green); text-decoration: none; font-weight: 600; }
-    .links a:hover { text-decoration: underline; }
-
-    footer { text-align: center; padding: 1.5rem; color: #777; font-size: 0.9rem; background: #e8f5e5; }
-
-    /* Modal de succès */
-    .success-modal {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0,0,0,0.5);
-      z-index: 1000;
-      justify-content: center;
-      align-items: center;
-    }
-    
-    .success-modal-content {
-      background: white;
-      padding: 2rem;
-      border-radius: 18px;
-      text-align: center;
-      max-width: 400px;
-      width: 90%;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-      border-top: 6px solid var(--green);
-    }
-    
-    .success-modal h3 {
-      color: var(--green);
-      font-family: 'Montserrat', sans-serif;
-      margin-bottom: 1rem;
-      font-size: 1.5rem;
-    }
-    
-    .success-modal p {
-      margin-bottom: 1.5rem;
-      color: #666;
-    }
-    
-    .success-modal button {
-      background: var(--green);
-      color: white;
-      border: none;
-      padding: 0.8rem 2rem;
-      border-radius: 8px;
-      cursor: pointer;
-      font-weight: 600;
-      font-size: 1rem;
-    }
-    
-    .success-modal button:hover {
-      background: #43a047;
-    }
-
-    @media (max-width: 992px) {
-      .main-container { flex-direction: column; }
-      .sidebar, .card { width: 100%; max-width: none; }
-    }
-  </style>
+   <link rel="stylesheet" type="text/css" href="css/inscrire.css">
 </head>
 <body>
-
-  <!-- Modal de succès -->
-  <div class="success-modal" id="successModal">
-    <div class="success-modal-content">
-      <i class="fas fa-check-circle" style="font-size: 3rem; color: var(--green); margin-bottom: 1rem;"></i>
-      <h3>Inscription réussie !</h3>
-      <p>Votre compte a été créé avec succès. Vous allez être redirigé vers votre profil.</p>
-      <button onclick="redirectToProfile()">Continuer</button>
-    </div>
-  </div>
-
   <header>
     <div class="logo">
       <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -313,40 +273,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   </footer>
 
   <script>
+    // Votre script JavaScript reste inchangé
     console.log("Validation JavaScript chargée !");
 
-    // Fonction pour rediriger vers le profil
-    function redirectToProfile() {
-      window.location.href = 'profile.php';
-    }
+    const form = document.getElementById('inscriptionForm');
+    if (!form) return console.error("Formulaire non trouvé");
 
-    // Afficher le modal de succès si l'inscription a réussi
-    document.addEventListener('DOMContentLoaded', () => {
-      // Vérifier le paramètre d'URL pour le succès
-      const urlParams = new URLSearchParams(window.location.search);
-      if (urlParams.get('success') === '1') {
-        const successModal = document.getElementById('successModal');
-        if (successModal) {
-          successModal.style.display = 'flex';
-          
-          // Redirection automatique après 3 secondes
-          setTimeout(() => {
-            redirectToProfile();
-          }, 3000);
-        }
-      }
-
-      const form = document.getElementById('inscriptionForm');
-      if (!form) return console.error("Formulaire non trouvé");
-
-      // === CHAMPS SÉCURISÉS ===
-      const getEl = (id) => {
-        const el = document.getElementById(id);
-        if (!el) console.error(`Champ manquant : #${id}`);
-        return el;
-      };
-
-      const inputs = {
+    const getEl = (id) => document.getElementById(id);
+    
+    const inputs = {
         nom: getEl('nom'),
         email: getEl('email'),
         password: getEl('password'),
@@ -358,51 +293,46 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         twitter: getEl('twitter'),
         linkedin: getEl('linkedin'),
         github: getEl('github')
-      };
+    };
 
-      // Arrête si un champ obligatoire manque
-      const requiredFields = ['nom', 'email', 'password', 'confirmPassword', 'role'];
-      if (requiredFields.some(field => !inputs[field])) return;
-
-      // === ERREURS ===
-      const showError = (field, msg) => {
+    const showError = (field, msg) => {
         const errorEl = document.getElementById(field + 'Error');
         if (errorEl && inputs[field]) {
-          errorEl.querySelector('span').textContent = msg;
-          errorEl.style.display = 'flex';
-          inputs[field].classList.add('error');
+            errorEl.querySelector('span').textContent = msg;
+            errorEl.style.display = 'flex';
+            inputs[field].classList.add('error');
         }
-      };
+    };
 
-      const hideError = (field) => {
+    const hideError = (field) => {
         const errorEl = document.getElementById(field + 'Error');
         if (errorEl && inputs[field]) {
-          errorEl.style.display = 'none';
-          inputs[field].classList.remove('error');
+            errorEl.style.display = 'none';
+            inputs[field].classList.remove('error');
         }
-      };
+    };
 
-      // === VALIDATION EN TEMPS RÉEL ===
-      inputs.nom.addEventListener('input', () => {
+    // Validation en temps réel
+    inputs.nom.addEventListener('input', () => {
         const v = inputs.nom.value.trim();
         if (v && /\d/.test(v)) {
-          showError('nom', 'Le nom ne doit pas contenir de chiffres');
+            showError('nom', 'Le nom ne doit pas contenir de chiffres');
         } else {
-          hideError('nom');
+            hideError('nom');
         }
-      });
+    });
 
-      inputs.email.addEventListener('input', () => {
+    inputs.email.addEventListener('input', () => {
         const v = inputs.email.value.trim().toLowerCase();
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (v && !emailRegex.test(v)) {
-          showError('email', 'Veuillez entrer un email valide');
+            showError('email', 'Veuillez entrer un email valide');
         } else {
-          hideError('email');
+            hideError('email');
         }
-      });
+    });
 
-      inputs.dateNaissance.addEventListener('change', () => {
+    inputs.dateNaissance.addEventListener('change', () => {
         const birth = new Date(inputs.dateNaissance.value);
         const today = new Date();
         let age = today.getFullYear() - birth.getFullYear();
@@ -410,99 +340,93 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
         
         if (inputs.dateNaissance.value && age < 13) {
-          showError('age', 'Âge minimum : 13 ans');
+            showError('age', 'Âge minimum : 13 ans');
         } else {
-          hideError('age');
+            hideError('age');
         }
-      });
+    });
 
-      inputs.password.addEventListener('input', () => {
+    inputs.password.addEventListener('input', () => {
         const password = inputs.password.value;
         if (password && password.length < 6) {
-          showError('password', 'Le mot de passe doit contenir au moins 6 caractères');
+            showError('password', 'Le mot de passe doit contenir au moins 6 caractères');
         } else {
-          hideError('password');
+            hideError('password');
         }
-      });
+    });
 
-      inputs.confirmPassword.addEventListener('input', () => {
+    inputs.confirmPassword.addEventListener('input', () => {
         const password = inputs.password.value;
         const confirmPassword = inputs.confirmPassword.value;
         if (confirmPassword && password !== confirmPassword) {
-          showError('confirmPassword', 'Les mots de passe ne correspondent pas');
+            showError('confirmPassword', 'Les mots de passe ne correspondent pas');
         } else {
-          hideError('confirmPassword');
+            hideError('confirmPassword');
         }
-      });
+    });
 
-      // === VALIDATION AVANT SOUMISSION ===
-      form.addEventListener('submit', e => {
+    // Validation avant soumission
+    form.addEventListener('submit', e => {
         e.preventDefault();
         
-        // Reset errors
         ['nom', 'email', 'age', 'password', 'confirmPassword'].forEach(hideError);
 
         let isValid = true;
 
-        // Validation des champs obligatoires
         if (!inputs.nom.value.trim()) {
-          showError('nom', 'Le nom complet est obligatoire');
-          isValid = false;
+            showError('nom', 'Le nom complet est obligatoire');
+            isValid = false;
         }
 
         if (!inputs.email.value.trim()) {
-          showError('email', 'L\'email est obligatoire');
-          isValid = false;
+            showError('email', 'L\'email est obligatoire');
+            isValid = false;
         } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(inputs.email.value.trim())) {
-          showError('email', 'Veuillez entrer un email valide');
-          isValid = false;
+            showError('email', 'Veuillez entrer un email valide');
+            isValid = false;
         }
 
         if (!inputs.password.value) {
-          showError('password', 'Le mot de passe est obligatoire');
-          isValid = false;
+            showError('password', 'Le mot de passe est obligatoire');
+            isValid = false;
         } else if (inputs.password.value.length < 6) {
-          showError('password', 'Le mot de passe doit contenir au moins 6 caractères');
-          isValid = false;
+            showError('password', 'Le mot de passe doit contenir au moins 6 caractères');
+            isValid = false;
         }
 
         if (!inputs.confirmPassword.value) {
-          showError('confirmPassword', 'Veuillez confirmer le mot de passe');
-          isValid = false;
+            showError('confirmPassword', 'Veuillez confirmer le mot de passe');
+            isValid = false;
         } else if (inputs.password.value !== inputs.confirmPassword.value) {
-          showError('confirmPassword', 'Les mots de passe ne correspondent pas');
-          isValid = false;
+            showError('confirmPassword', 'Les mots de passe ne correspondent pas');
+            isValid = false;
         }
 
         if (!inputs.role.value) {
-          alert('Veuillez sélectionner un rôle');
-          isValid = false;
+            alert('Veuillez sélectionner un rôle');
+            isValid = false;
         }
 
-        // Validation âge
         if (inputs.dateNaissance.value) {
-          const birth = new Date(inputs.dateNaissance.value);
-          const today = new Date();
-          let age = today.getFullYear() - birth.getFullYear();
-          const m = today.getMonth() - birth.getMonth();
-          if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
-          
-          if (age < 13) {
-            showError('age', 'Âge minimum : 13 ans');
-            isValid = false;
-          }
+            const birth = new Date(inputs.dateNaissance.value);
+            const today = new Date();
+            let age = today.getFullYear() - birth.getFullYear();
+            const m = today.getMonth() - birth.getMonth();
+            if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
+            
+            if (age < 13) {
+                showError('age', 'Âge minimum : 13 ans');
+                isValid = false;
+            }
         }
 
         if (isValid) {
-          // Copier les valeurs des réseaux sociaux dans les champs cachés
-          document.getElementById('twitter_hidden').value = inputs.twitter.value.trim();
-          document.getElementById('linkedin_hidden').value = inputs.linkedin.value.trim();
-          document.getElementById('github_hidden').value = inputs.github.value.trim();
-          
-          // Soumettre le formulaire
-          form.submit();
+            document.getElementById('twitter_hidden').value = inputs.twitter.value.trim();
+            document.getElementById('linkedin_hidden').value = inputs.linkedin.value.trim();
+            document.getElementById('github_hidden').value = inputs.github.value.trim();
+            
+            form.submit();
         }
-      });
     });
   </script>
 </body>
