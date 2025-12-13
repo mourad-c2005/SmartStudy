@@ -1,0 +1,248 @@
+/* public/css/style.css */
+:root {
+  --green: #4CAF50;
+  --yellow: #FFEB3B;
+  --light: #E8F5E8;
+  --white: #ffffff;
+  --dark: #2e7d32;
+}
+* { 
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+body {
+  font-family: 'Open Sans', sans-serif;
+  background: var(--light);
+  color: #333;
+  margin: 0;
+  padding: 0;
+  padding-bottom: 60px;
+}
+
+/* Top Navigation - EXACTEMENT comme plan.css */
+.top-nav {
+  background: var(--white);
+  padding: 1rem 5%;
+  box-shadow: 0 4px 15px rgba(76, 175, 80, 0.1);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  min-height: 120px; /* Hauteur fixe comme plan.css */
+  height: auto;
+}
+.logo {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 780;
+  font-size: 1.8rem;
+  color: var(--green);
+  text-decoration: none;
+  line-height: 1;
+}
+.nav-menu {
+  display: flex;
+  gap: 1.5rem;
+  align-items: center;
+}
+.nav-menu a {
+  color: #555;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 1rem;
+  padding: 0.5rem 1rem;
+  border-radius: 30px;
+  transition: 0.3s;
+  display: inline-block;
+  line-height: 1.5;
+}
+.nav-menu a:hover, .nav-menu a.active {
+  background: var(--light);
+  color: var(--green);
+}
+
+/* User Section - EXACTEMENT comme plan.css */
+.user-section {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  height: 45px; /* Hauteur fixe pour correspondre à la photo */
+}
+.user-info {
+  text-align: right;
+  line-height: 1.2;
+}
+.user-info .profile-link {
+  text-decoration: none;
+  color: inherit;
+  transition: 0.3s;
+  padding: 0.5rem;
+  border-radius: 8px;
+  display: block;
+}
+.user-info .profile-link:hover {
+  background: var(--light);
+  transform: translateY(-1px);
+}
+.user-info .name {
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 0.2rem;
+  font-size: 0.95rem;
+}
+.user-info .role {
+  font-size: 0.85rem;
+  color: #777;
+}
+.user-photo {
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid var(--green);
+  cursor: pointer;
+  transition: 0.3s;
+  display: block;
+}
+.user-photo:hover {
+  transform: scale(1.05);
+  border-color: var(--dark);
+}
+.logout-btn {
+  background: var(--yellow);
+  color: #333;
+  padding: 0.5rem 1rem;
+  border-radius: 30px;
+  font-weight: 600;
+  text-decoration: none;
+  font-size: 0.9rem;
+  transition: 0.3s;
+  display: inline-block;
+  line-height: 1.5;
+}
+.logout-btn:hover {
+  background: #fdd835;
+  transform: translateY(-1px);
+}
+.admin-btn {
+  background: var(--dark);
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 30px;
+  font-weight: 600;
+  text-decoration: none;
+  font-size: 0.9rem;
+  transition: 0.3s;
+  margin-right: 0.5rem;
+  display: inline-block;
+  line-height: 1.5;
+}
+.admin-btn:hover {
+  background: #1b5e20;
+  transform: translateY(-1px);
+}
+
+/* Main Content - Ajusté pour la hauteur de navigation */
+.main-content {
+  padding: 2rem 5%;
+  min-height: calc(100vh - 70px - 60px); /* 70px nav + 60px padding-bottom */
+}
+
+/* Le reste de votre CSS original */
+.welcome-card {
+  background: var(--white);
+  border-radius: 20px;
+  padding: 2rem;
+  text-align: center;
+  box-shadow: 0 8px 25px rgba(0,0,0,0.06);
+  margin-bottom: 1.5rem;
+}
+.btn-start {
+  background: var(--green);
+  color: #fff;
+  padding: 0.8rem 2rem; /* Augmenté pour correspondre */
+  border-radius: 30px;
+  text-decoration: none;
+  font-weight: 600;
+  display: inline-block;
+  transition: 0.3s;
+}
+.btn-start:hover {
+  background: var(--dark);
+  transform: translateY(-2px);
+}
+.module-card {
+  background: var(--white);
+  border-radius: 16px;
+  padding: 1.6rem;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+  border-left: 5px solid var(--green);
+  text-align: center;
+  height: 100%;
+  transition: transform 0.3s;
+}
+.module-card:hover {
+  transform: translateY(-5px);
+}
+.table-list {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 12px;
+}
+.table-list th, .table-list td {
+  border: 1px solid #e6e6e6;
+  padding: 8px;
+  text-align: left;
+}
+.form {
+  max-width: 800px;
+  background: var(--white);
+  padding: 16px;
+  border-radius: 12px;
+  box-shadow: 0 6px 12px rgba(0,0,0,0.03);
+}
+.form input[type="text"], .form textarea {
+  width: 100%;
+  padding: 8px;
+  margin: 6px 0 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+}
+.ans-btn {
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  background: #fff;
+  cursor: pointer;
+  margin-top: 6px;
+}
+
+/* Responsive - Correspond à plan.css */
+@media (max-width: 992px) {
+  .top-nav { 
+    flex-direction: column; 
+    gap: 1rem; 
+    padding: 1rem;
+    min-height: auto;
+  }
+  .nav-menu { 
+    order: 3; 
+    flex-wrap: wrap; 
+    justify-content: center;
+    gap: 0.8rem;
+  }
+  .user-section { 
+    flex-direction: column; 
+    text-align: center; 
+    height: auto;
+    gap: 0.8rem;
+  }
+  .user-info { 
+    text-align: center; 
+  }
+  .main-content { 
+    padding: 1.5rem 3%; 
+  }
+}
